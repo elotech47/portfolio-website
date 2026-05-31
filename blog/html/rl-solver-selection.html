@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How I Taught a Reinforcement Learning Agent to Choose ODE Solvers — Eloghosa Ikponwoba</title>
+<meta name="description" content="A deep dive into the PPO + Lagrangian constraint formulation that drives my combustion simulation speedup work — benchmarks, failure modes, and what the ablation studies revealed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:        #0d0d0e;
+    --bg2:       #141416;
+    --bg3:       #1a1a1d;
+    --line:      rgba(255,255,255,0.07);
+    --line2:     rgba(255,255,255,0.12);
+    --gold:      #c9a84c;
+    --gold-glow: rgba(201,168,76,0.08);
+    --text:      #e8e4dc;
+    --text-muted:rgba(232,228,220,0.45);
+    --text-dim:  rgba(232,228,220,0.65);
+    --mono:  'DM Mono', monospace;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans:  'Outfit', sans-serif;
+    --content-width: 720px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Grid overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Cursor */
+  .cursor      { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+  .cursor-ring { position:fixed; width:32px; height:32px; border:1px solid rgba(201,168,76,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.5rem 4rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    background: rgba(13,13,14,0.85);
+    backdrop-filter: blur(16px);
+  }
+  .nav-logo { font-family:var(--mono); font-size:0.78rem; color:var(--gold); letter-spacing:0.15em; text-decoration:none; }
+  .nav-back  { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; transition:color .3s; display:flex; align-items:center; gap:0.5rem; }
+  .nav-back:hover { color:var(--gold); }
+
+  /* Post header */
+  .post-header {
+    position: relative;
+    z-index: 1;
+    padding: 12rem 4rem 6rem;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .post-category {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid;
+  }
+  .cat-research { color:#7fb3d3; border-color:rgba(127,179,211,0.3); }
+  .cat-opinion  { color:#c4956a; border-color:rgba(196,149,106,0.3); }
+  .cat-project  { color:#82c9a0; border-color:rgba(130,201,160,0.3); }
+  .cat-essay    { color:#b09fd6; border-color:rgba(176,159,214,0.3); }
+
+  .post-date     { font-family:var(--mono); font-size:0.62rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .post-readtime { font-family:var(--mono); font-size:0.62rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .meta-dot      { width:3px; height:3px; border-radius:50%; background:var(--text-muted); opacity:0.4; }
+
+  .post-title {
+    font-family: var(--serif);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 2rem;
+  }
+  .post-title em { font-style: italic; color: var(--gold); }
+
+  .post-excerpt {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    max-width: 600px;
+    border-left: 1px solid var(--gold);
+    padding-left: 1.5rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+  .post-tag {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 0.25rem 0.6rem;
+    text-transform: uppercase;
+  }
+
+  /* Divider */
+  .post-divider {
+    position: relative;
+    z-index: 1;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+    padding: 0 4rem;
+    border-top: 1px solid var(--line2);
+  }
+
+  /* Post body */
+  .post-body {
+    position: relative;
+    z-index: 1;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+    padding: 5rem 4rem 8rem;
+  }
+
+  /* ── TYPOGRAPHY: markdown-rendered content ── */
+  .post-content { max-width: var(--content-width); }
+
+  .post-content p {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text-dim);
+    margin-bottom: 1.8rem;
+  }
+
+  .post-content h2 {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text);
+    margin: 4rem 0 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--line2);
+  }
+
+  .post-content h3 {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--gold);
+    margin: 3rem 0 1rem;
+  }
+
+  .post-content h4 {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 2.5rem 0 1rem;
+  }
+
+  .post-content strong {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .post-content em {
+    font-style: italic;
+    color: var(--text-dim);
+  }
+
+  .post-content a {
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    transition: border-color .3s;
+  }
+  .post-content a:hover { border-color: var(--gold); }
+
+  /* Blockquote — pull quote style */
+  .post-content blockquote {
+    margin: 3rem 0;
+    padding: 2rem 2.5rem;
+    border-left: 2px solid var(--gold);
+    background: rgba(201,168,76,0.04);
+  }
+  .post-content blockquote p {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Code — inline */
+  .post-content code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    color: var(--gold);
+    background: rgba(201,168,76,0.08);
+    padding: 0.15em 0.4em;
+    border-radius: 2px;
+  }
+
+  /* Code block */
+  .post-content pre {
+    background: var(--bg3);
+    border: 1px solid var(--line2);
+    padding: 2rem;
+    overflow-x: auto;
+    margin: 2.5rem 0;
+    position: relative;
+  }
+  .post-content pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 100%;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+  .post-content pre code {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    background: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* Lists */
+  .post-content ul, .post-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.8rem;
+    color: var(--text-dim);
+  }
+  .post-content li {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    margin-bottom: 0.5rem;
+  }
+  .post-content ul li::marker { color: var(--gold); }
+  .post-content ol li::marker { font-family: var(--mono); font-size: 0.8em; color: var(--gold); }
+
+  /* Horizontal rule */
+  .post-content hr {
+    border: none;
+    border-top: 1px solid var(--line2);
+    margin: 4rem 0;
+  }
+
+  /* Images */
+  .post-content img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 3rem 0;
+    border: 1px solid var(--line2);
+  }
+  .post-content figure { margin: 3rem 0; }
+  .post-content figcaption {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 0.8rem;
+    text-align: center;
+  }
+
+  /* Callout — special class via blockquote > p starting with NOTE: WARNING: etc. */
+  .callout {
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--line2);
+    margin: 2.5rem 0;
+    font-size: 0.92rem;
+  }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+  }
+
+  /* Post footer / nav between posts */
+  .post-footer {
+    position: relative;
+    z-index: 1;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+    padding: 4rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .back-to-blog {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line2);
+    padding-bottom: 2px;
+    transition: color .3s, border-color .3s;
+  }
+  .back-to-blog:hover { color: var(--gold); border-color: var(--gold); }
+
+  .share-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 1;
+    padding: 2rem 4rem;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-copy { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .footer-loc  { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; display:flex; align-items:center; gap:0.5rem; }
+  .loc-dot     { width:5px; height:5px; border-radius:50%; background:var(--gold); animation:pulse 2s ease-in-out infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .post-header { animation: fadeUp .8s ease forwards; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1.25rem 1.5rem; }
+    .post-header, .post-body, .post-footer, .post-divider { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .post-header { padding-top: 8rem; }
+    footer { flex-direction: column; gap: .5rem; text-align: center; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav>
+  <a href="/" class="nav-logo">EI // 2026</a>
+  <a href="/blog/" class="nav-back">&larr; All posts</a>
+</nav>
+
+<header class="post-header">
+  <div class="post-meta">
+    <span class="post-category cat-research">research</span>
+    <div class="meta-dot"></div>
+    <span class="post-date">May 2026</span>
+    <div class="meta-dot"></div>
+    <span class="post-readtime">12 min read</span>
+  </div>
+
+  <h1 class="post-title">How I Taught a Reinforcement Learning Agent to Choose ODE Solvers</h1>
+  <p class="post-excerpt">A deep dive into the PPO + Lagrangian constraint formulation that drives my combustion simulation speedup work — benchmarks, failure modes, and what the ablation studies revealed.</p>
+
+  <div class="post-tags"><span class="post-tag">Reinforcement Learning</span><span class="post-tag">Combustion</span><span class="post-tag">ODE Solvers</span><span class="post-tag">PPO</span><span class="post-tag">Lagrangian Constraints</span></div>
+</header>
+
+<div class="post-divider"></div>
+
+<main class="post-body">
+  <article class="post-content">
+    <p>Combustion simulations are expensive. Not in the vague, hand-wavy sense that people use when they mean &quot;my laptop gets warm.&quot; Expensive as in: a single 3D turbulent flame simulation at realistic conditions can consume millions of CPU-hours. A significant chunk of that cost — often 60–90% — goes to solving the chemistry: a system of stiff ordinary differential equations (ODEs) describing hundreds of species reacting on timescales that span twelve orders of magnitude.</p>
+<p>Two dominant integrators handle this in practice: <strong>CVODE</strong>, a robust BDF-based solver that handles stiffness reliably but conservatively; and <strong>QSS</strong> (Quasi-Steady-State), a faster algebraic approximation that works brilliantly in igniting conditions but can fail catastrophically on others. The standard approach? Pick one and use it everywhere.</p>
+<p>That always struck me as wasteful. The choice of integrator is inherently a function of the local chemical state — temperature, composition, heat release rate. Some cells need CVODE. Others would be fine with QSS. The question is: can a learned agent make that call, faster and better than any static rule?</p>
+<p>That question became my dissertation&#39;s core experiment.</p>
+<hr>
+<h2>The Setup</h2>
+<p>The environment is a 0D homogeneous reactor — a canonical testbed for combustion chemistry. At each timestep, the agent observes the current chemical state (a normalized feature vector of temperature, pressure, and key species concentrations) and selects either CVODE or QSS to advance the solution forward.</p>
+<p>The reward signal has two components:</p>
+<ol>
+<li><strong>Speed reward</strong>: proportional to the wallclock time saved vs. a CVODE-only baseline</li>
+<li><strong>Accuracy penalty</strong>: triggered when the agent&#39;s solution drifts outside a tolerance bound relative to a high-fidelity reference</li>
+</ol>
+<p>The challenge is that these objectives are in tension. QSS is faster but riskier. A purely speed-maximizing agent learns to always pick QSS — and watches the solution blow up at ignition.</p>
+<h3>The Lagrangian Constraint Formulation</h3>
+<p>Standard constrained RL (using barrier functions or penalty terms) tends to be brittle: the penalty coefficient becomes a hyperparameter that requires careful tuning, and the agent often oscillates between feasibility and infeasibility during training.</p>
+<p>Instead, we used a <strong>Lagrangian relaxation</strong> approach. The constraint — that mean absolute error must stay below a threshold ε — is dualized into the objective via a Lagrange multiplier λ, which is updated online using gradient ascent:</p>
+<pre><code>λ_{t+1} = max(0, λ_t + α_λ · (C_t − ε))
+</code></pre>
+<p>Where <code>C_t</code> is the current constraint violation and <code>α_λ</code> is the dual learning rate. This gives the agent a self-adjusting pressure to respect accuracy bounds — λ grows when the agent is violating, shrinks when it&#39;s comfortably within bounds. No fixed penalty coefficient. No manual tuning.</p>
+<p>The primal (policy) update runs PPO as normal. The dual update runs after every batch. It&#39;s clean, stable, and easy to implement on top of any existing PPO codebase.</p>
+<hr>
+<h2>What the Numbers Actually Show</h2>
+<blockquote>
+<p>The headline result: <strong>4.65× mean speedup</strong> (±0.34×) over a CVODE-only baseline, across 750 igniting conditions from the GRI-Mech 3.0 mechanism.</p>
+</blockquote>
+<p>But the number alone doesn&#39;t tell you much. Here&#39;s what&#39;s more interesting:</p>
+<h3>Where the agent learned to use QSS</h3>
+<p>The agent developed a clear policy structure that emerged without supervision:</p>
+<ul>
+<li><strong>Pre-ignition (T &lt; 900K):</strong> almost always CVODE. The chemistry is slow but the gradients are stiff in unintuitive ways. QSS fails silently here.</li>
+<li><strong>Near ignition (900K–1200K):</strong> mixed policy. The agent learned to use QSS in short bursts, switching back to CVODE when species like OH spike.</li>
+<li><strong>Post-ignition (T &gt; 1200K):</strong> strongly favors QSS. The quasi-steady-state assumption holds well in high-temperature equilibrium-approaching conditions.</li>
+</ul>
+<p>This is physically sensible. It&#39;s also something a domain expert might have written as a hand-coded heuristic. The agent rediscovered it from reward signals alone, across 24 different initial conditions spanning equivalence ratios from 0.6 to 1.6.</p>
+<h3>The γ=0 ablation</h3>
+<p>This is the part I find most instructive. When we removed the Lagrangian constraint entirely (setting γ=0, effectively unconstrained PPO), the agent achieved <strong>8.58× speedup</strong> — nearly double our constrained result.</p>
+<p>But the mean absolute error jumped <strong>7× higher</strong> than the constrained agent. In some conditions, the solution simply diverged.</p>
+<p>The unconstrained agent is not better. It&#39;s faster in a way that&#39;s physically meaningless. The constraint isn&#39;t a limitation on performance — it&#39;s the definition of what &quot;performance&quot; means in scientific computing. Speed without accuracy is noise.</p>
+<hr>
+<h2>Failure Modes Worth Knowing</h2>
+<p>The agent has failure modes that don&#39;t show up in aggregate metrics.</p>
+<p><strong>Rapid fuel-air mixture switching.</strong> When we evaluated on equivalence ratios outside the training distribution (φ &lt; 0.5 or φ &gt; 1.8), the policy became unstable — oscillating between CVODE and QSS at high frequency and achieving neither the speed of QSS nor the reliability of CVODE. Distribution shift in combustion conditions is a real deployment concern.</p>
+<p><strong>Cold start conditions.</strong> At very low initial temperatures (T₀ &lt; 600K), the long induction period before ignition exposes the agent to thousands of timesteps of slow, non-igniting chemistry. The agent was undertrained on this regime and defaulted to QSS too aggressively.</p>
+<p><strong>Timestep sensitivity in 3D environments.</strong> The 0D/1D training environment uses adaptive timestepping. In PeleLMeX (the 3D AMR code), the global timestep is set by the most restrictive cell in the domain. The agent&#39;s switching behavior, trained for local optimality, can actually slow things down when it forces CVODE in cells that are &quot;easy&quot; but happen to set the global timestep. This is the unsolved problem at the frontier of the work.</p>
+<hr>
+<h2>What&#39;s Next</h2>
+<p>The paper under review at <em>Combustion and Flame</em> addresses the first two failure modes through data augmentation and curriculum training. The third — the AMR global timestep problem — is the subject of a physics-informed dt-gate fix I&#39;m designing now, where the agent&#39;s action space is conditioned on whether the current cell is the timestep-limiting cell.</p>
+<p>If that works, it opens the door to deployment in PeleLMeX on the LONI QB2 cluster. Which is where the real test begins.</p>
+<hr>
+<p><em>The arXiv preprint is at <a href="https://arxiv.org/abs/2604.00264">2604.00264</a>. The code will be released upon journal acceptance.</em></p>
+
+  </article>
+</main>
+
+<div class="post-footer">
+  <a href="/blog/" class="back-to-blog">&larr; All posts</a>
+  <span class="share-label">Eloghosa Ikponwoba &mdash; May 2026</span>
+</div>
+
+<footer>
+  <div class="footer-copy">&copy; 2026 Eloghosa Ikponwoba. All rights reserved.</div>
+  <div class="footer-loc"><div class="loc-dot"></div>Houston, TX — Baton Rouge, LA</div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+  (function loop(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cursor.style.width='14px'; cursor.style.height='14px'; ring.style.width='48px'; ring.style.height='48px'; });
+    el.addEventListener('mouseleave',()=>{ cursor.style.width='8px';  cursor.style.height='8px';  ring.style.width='32px'; ring.style.height='32px'; });
+  });
+</script>
+
+</body>
+</html>

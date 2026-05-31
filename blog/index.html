@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Blog — Eloghosa Ikponmwoba. Essays and deep dives on reinforcement learning, combustion simulation, engineering, and AI.">
+<meta property="og:title" content="Blog — Eloghosa Ikponmwoba">
+<meta property="og:description" content="Ideas, written down. Research notes, projects, and essays.">
+<meta property="og:type" content="website">
+<title>Blog — Loading...</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="../site.config.js"></script>
+
+<style>
+  :root {
+    --bg:       #0d0d0e;
+    --bg2:      #141416;
+    --line:     rgba(255,255,255,0.07);
+    --line2:    rgba(255,255,255,0.12);
+    --gold:     #c9a84c;
+    --gold-glow:rgba(201,168,76,0.08);
+    --text:     #e8e4dc;
+    --text-muted:rgba(232,228,220,0.45);
+    --text-dim: rgba(232,228,220,0.65);
+    --mono:  'DM Mono', monospace;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans:  'Outfit', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+  .cursor-ring { position:fixed; width:32px; height:32px; border:1px solid rgba(201,168,76,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+  body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px); background-size:80px 80px; pointer-events:none; z-index:0; }
+
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:1.5rem 4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:rgba(13,13,14,0.85); backdrop-filter:blur(16px); }
+  .nav-logo { font-family:var(--mono); font-size:0.78rem; color:var(--gold); letter-spacing:0.15em; text-decoration:none; }
+  .nav-back { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; transition:color .3s; }
+  .nav-back:hover { color:var(--gold); }
+
+  main { position:relative; z-index:1; padding:10rem 4rem 6rem; max-width:1400px; margin:0 auto; }
+  .blog-page-header { margin-bottom:4rem; }
+  .blog-page-header .section-label { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.25em; color:var(--gold); text-transform:uppercase; margin-bottom:1.5rem; }
+  .blog-page-header h1 { font-family:var(--serif); font-size:clamp(2.5rem,5vw,4rem); font-weight:300; line-height:1.1; margin-bottom:1rem; }
+  .blog-page-header h1 em { font-style:italic; color:var(--gold); }
+  .blog-page-intro { font-size:1rem; color:var(--text-dim); max-width:520px; line-height:1.85; }
+
+  .blog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+  .blog-card { background:var(--bg2); padding:2rem; border:1px solid var(--line); display:flex; flex-direction:column; text-decoration:none; color:inherit; position:relative; overflow:hidden; transition:border-color .3s; cursor:none; }
+  .blog-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .4s ease; }
+  .blog-card:hover { border-color:rgba(201,168,76,0.2); }
+  .blog-card:hover::after { transform:scaleX(1); }
+  .blog-card:hover .blog-title { color:var(--gold); }
+
+  .blog-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; }
+  .blog-category { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.12em; color:var(--gold); text-transform:uppercase; border:1px solid rgba(201,168,76,0.3); padding:0.2rem 0.5rem; }
+  .blog-date { font-family:var(--mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .blog-title { font-family:var(--serif); font-size:1.25rem; font-weight:400; line-height:1.35; margin-bottom:0.8rem; transition:color .3s; }
+  .blog-excerpt { font-size:0.83rem; color:var(--text-muted); line-height:1.75; flex:1; margin-bottom:1.5rem; }
+  .blog-footer { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:1rem; border-top:1px solid var(--line); }
+  .blog-read-time { font-family:var(--mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .blog-arrow { font-size:1rem; color:var(--text-muted); transition:color .3s,transform .3s; }
+  .blog-card:hover .blog-arrow { color:var(--gold); transform:translateX(4px); }
+
+  .cat-research  { color: #7fb3d3; border-color: rgba(127,179,211,0.3); }
+  .cat-opinion   { color: #c4956a; border-color: rgba(196,149,106,0.3); }
+  .cat-project   { color: #82c9a0; border-color: rgba(130,201,160,0.3); }
+  .cat-essay     { color: #b09fd6; border-color: rgba(176,159,214,0.3); }
+
+  .blog-empty { font-family:var(--mono); font-size:0.75rem; letter-spacing:0.1em; color:var(--text-muted); padding:3rem 0; }
+
+  footer { position:relative; z-index:1; padding:2rem 4rem; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  .footer-copy { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .footer-loc { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; display:flex; align-items:center; gap:0.5rem; }
+  .loc-dot { width:5px; height:5px; border-radius:50%; background:var(--gold); animation:pulse 2s ease-in-out infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  @media(max-width:768px){
+    nav{padding:1.25rem 1.5rem;}
+    main{padding:8rem 1.5rem 4rem;}
+    .blog-grid{grid-template-columns:1fr;}
+    footer{flex-direction:column;gap:.5rem;text-align:center;}
+    body{cursor:auto;}
+    .cursor,.cursor-ring{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav id="nav"></nav>
+
+<main>
+  <header class="blog-page-header">
+    <div class="section-label">Blog</div>
+    <h1>Ideas,<br>written <em>down.</em></h1>
+    <p class="blog-page-intro" id="blog-intro"></p>
+  </header>
+  <div class="blog-grid" id="blog-grid"></div>
+</main>
+
+<footer id="footer"></footer>
+
+<script>
+const C = SITE_CONFIG;
+const $ = id => document.getElementById(id);
+const categoryClass = cat => `cat-${cat}`;
+
+document.title = `Blog — ${C.identity.firstName} ${C.identity.lastName}`;
+
+$('nav').innerHTML = `
+  <a href="/" class="nav-logo">${C.identity.initials} // ${C.identity.year}</a>
+  <a href="/" class="nav-back">&larr; Main site</a>
+`;
+
+$('blog-intro').textContent =
+  'Research notes, project write-ups, and essays on engineering, reinforcement learning, and the systems I build.';
+
+const published = C.blog.filter(post => post.published);
+
+$('blog-grid').innerHTML = published.length
+  ? published.map(post => `
+  <a class="blog-card" href="html/${post.slug}.html">
+    <div class="blog-meta">
+      <span class="blog-category ${categoryClass(post.category)}">${post.category}</span>
+      <span class="blog-date">${post.date}</span>
+    </div>
+    <div class="blog-title">${post.title}</div>
+    <div class="blog-excerpt">${post.excerpt}</div>
+    <div class="blog-footer">
+      <span class="blog-read-time">${post.readTime} read</span>
+      <span class="blog-arrow">&rarr;</span>
+    </div>
+  </a>
+`).join('')
+  : '<p class="blog-empty">No posts published yet.</p>';
+
+$('footer').innerHTML = `
+  <div class="footer-copy">&copy; ${C.identity.year} ${C.identity.firstName} ${C.identity.lastName}. All rights reserved.</div>
+  <div class="footer-loc"><div class="loc-dot"></div>${C.identity.location}</div>
+`;
+
+const cursor = $('cursor');
+const ring = $('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+});
+(function loop() {
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '14px'; cursor.style.height = '14px';
+    ring.style.width = '48px'; ring.style.height = '48px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '8px'; cursor.style.height = '8px';
+    ring.style.width = '32px'; ring.style.height = '32px';
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} — Eloghosa Ikponwoba</title>
+<meta name="description" content="{{EXCERPT}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:        #0d0d0e;
+    --bg2:       #141416;
+    --bg3:       #1a1a1d;
+    --line:      rgba(255,255,255,0.07);
+    --line2:     rgba(255,255,255,0.12);
+    --gold:      #c9a84c;
+    --gold-glow: rgba(201,168,76,0.08);
+    --text:      #e8e4dc;
+    --text-muted:rgba(232,228,220,0.45);
+    --text-dim:  rgba(232,228,220,0.65);
+    --mono:  'DM Mono', monospace;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans:  'Outfit', sans-serif;
+    --content-width: 720px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Grid overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Cursor */
+  .cursor      { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+  .cursor-ring { position:fixed; width:32px; height:32px; border:1px solid rgba(201,168,76,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.5rem 4rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    background: rgba(13,13,14,0.85);
+    backdrop-filter: blur(16px);
+  }
+  .nav-logo { font-family:var(--mono); font-size:0.78rem; color:var(--gold); letter-spacing:0.15em; text-decoration:none; }
+  .nav-back  { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; transition:color .3s; display:flex; align-items:center; gap:0.5rem; }
+  .nav-back:hover { color:var(--gold); }
+
+  /* Post header */
+  .post-header {
+    position: relative;
+    z-index: 1;
+    padding: 12rem 4rem 6rem;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .post-category {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid;
+  }
+  .cat-research { color:#7fb3d3; border-color:rgba(127,179,211,0.3); }
+  .cat-opinion  { color:#c4956a; border-color:rgba(196,149,106,0.3); }
+  .cat-project  { color:#82c9a0; border-color:rgba(130,201,160,0.3); }
+  .cat-essay    { color:#b09fd6; border-color:rgba(176,159,214,0.3); }
+
+  .post-date     { font-family:var(--mono); font-size:0.62rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .post-readtime { font-family:var(--mono); font-size:0.62rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .meta-dot      { width:3px; height:3px; border-radius:50%; background:var(--text-muted); opacity:0.4; }
+
+  .post-title {
+    font-family: var(--serif);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 2rem;
+  }
+  .post-title em { font-style: italic; color: var(--gold); }
+
+  .post-excerpt {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    max-width: 600px;
+    border-left: 1px solid var(--gold);
+    padding-left: 1.5rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+  .post-tag {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 0.25rem 0.6rem;
+    text-transform: uppercase;
+  }
+
+  /* Divider */
+  .post-divider {
+    position: relative;
+    z-index: 1;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+    padding: 0 4rem;
+    border-top: 1px solid var(--line2);
+  }
+
+  /* Post body */
+  .post-body {
+    position: relative;
+    z-index: 1;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+    padding: 5rem 4rem 8rem;
+  }
+
+  /* ── TYPOGRAPHY: markdown-rendered content ── */
+  .post-content { max-width: var(--content-width); }
+
+  .post-content p {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text-dim);
+    margin-bottom: 1.8rem;
+  }
+
+  .post-content h2 {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text);
+    margin: 4rem 0 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--line2);
+  }
+
+  .post-content h3 {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--gold);
+    margin: 3rem 0 1rem;
+  }
+
+  .post-content h4 {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 2.5rem 0 1rem;
+  }
+
+  .post-content strong {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .post-content em {
+    font-style: italic;
+    color: var(--text-dim);
+  }
+
+  .post-content a {
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    transition: border-color .3s;
+  }
+  .post-content a:hover { border-color: var(--gold); }
+
+  /* Blockquote — pull quote style */
+  .post-content blockquote {
+    margin: 3rem 0;
+    padding: 2rem 2.5rem;
+    border-left: 2px solid var(--gold);
+    background: rgba(201,168,76,0.04);
+  }
+  .post-content blockquote p {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Code — inline */
+  .post-content code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    color: var(--gold);
+    background: rgba(201,168,76,0.08);
+    padding: 0.15em 0.4em;
+    border-radius: 2px;
+  }
+
+  /* Code block */
+  .post-content pre {
+    background: var(--bg3);
+    border: 1px solid var(--line2);
+    padding: 2rem;
+    overflow-x: auto;
+    margin: 2.5rem 0;
+    position: relative;
+  }
+  .post-content pre::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 100%;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+  .post-content pre code {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    background: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* Lists */
+  .post-content ul, .post-content ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.8rem;
+    color: var(--text-dim);
+  }
+  .post-content li {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    margin-bottom: 0.5rem;
+  }
+  .post-content ul li::marker { color: var(--gold); }
+  .post-content ol li::marker { font-family: var(--mono); font-size: 0.8em; color: var(--gold); }
+
+  /* Horizontal rule */
+  .post-content hr {
+    border: none;
+    border-top: 1px solid var(--line2);
+    margin: 4rem 0;
+  }
+
+  /* Images */
+  .post-content img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 3rem 0;
+    border: 1px solid var(--line2);
+  }
+  .post-content figure { margin: 3rem 0; }
+  .post-content figcaption {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-top: 0.8rem;
+    text-align: center;
+  }
+
+  /* Callout — special class via blockquote > p starting with NOTE: WARNING: etc. */
+  .callout {
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--line2);
+    margin: 2.5rem 0;
+    font-size: 0.92rem;
+  }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+  }
+
+  /* Post footer / nav between posts */
+  .post-footer {
+    position: relative;
+    z-index: 1;
+    max-width: calc(var(--content-width) + 8rem);
+    margin: 0 auto;
+    padding: 4rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .back-to-blog {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line2);
+    padding-bottom: 2px;
+    transition: color .3s, border-color .3s;
+  }
+  .back-to-blog:hover { color: var(--gold); border-color: var(--gold); }
+
+  .share-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 1;
+    padding: 2rem 4rem;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-copy { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .footer-loc  { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; display:flex; align-items:center; gap:0.5rem; }
+  .loc-dot     { width:5px; height:5px; border-radius:50%; background:var(--gold); animation:pulse 2s ease-in-out infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .post-header { animation: fadeUp .8s ease forwards; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1.25rem 1.5rem; }
+    .post-header, .post-body, .post-footer, .post-divider { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .post-header { padding-top: 8rem; }
+    footer { flex-direction: column; gap: .5rem; text-align: center; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav>
+  <a href="../../" class="nav-logo">EI // 2025</a>
+  <a href="/blog/" class="nav-back">&larr; All posts</a>
+</nav>
+
+<header class="post-header">
+  <div class="post-meta">
+    <span class="post-category cat-{{CATEGORY}}">{{CATEGORY}}</span>
+    <div class="meta-dot"></div>
+    <span class="post-date">{{DATE}}</span>
+    <div class="meta-dot"></div>
+    <span class="post-readtime">{{READ_TIME}} read</span>
+  </div>
+
+  <h1 class="post-title">{{TITLE}}</h1>
+  <p class="post-excerpt">{{EXCERPT}}</p>
+
+  <div class="post-tags">{{TAGS}}</div>
+</header>
+
+<div class="post-divider"></div>
+
+<main class="post-body">
+  <article class="post-content">
+    {{CONTENT}}
+  </article>
+</main>
+
+<div class="post-footer">
+  <a href="/blog/" class="back-to-blog">&larr; All posts</a>
+  <span class="share-label">Eloghosa Ikponwoba &mdash; {{DATE}}</span>
+</div>
+
+<footer>
+  <div class="footer-copy">&copy; 2025 Eloghosa Ikponwoba. All rights reserved.</div>
+  <div class="footer-loc"><div class="loc-dot"></div>Houston, TX — Baton Rouge, LA</div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+  (function loop(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cursor.style.width='14px'; cursor.style.height='14px'; ring.style.width='48px'; ring.style.height='48px'; });
+    el.addEventListener('mouseleave',()=>{ cursor.style.width='8px';  cursor.style.height='8px';  ring.style.width='32px'; ring.style.height='32px'; });
+  });
+</script>
+
+</body>
+</html>

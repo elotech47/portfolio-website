@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Eloghosa Ikponmwoba — PhD Candidate at LSU. Research in reinforcement learning for combustion simulations, multi-agent RL, GNN proxy modeling; previously ML Engineer at RIGR AI (INTERPOL technical working group).">
+<meta property="og:title" content="Eloghosa Ikponmwoba — Researcher & Engineer">
+<meta property="og:description" content="PhD Candidate at LSU. Building intelligent systems at the intersection of physical simulation and reinforcement learning; formerly ML Engineer at RIGR AI.">
+<meta property="og:type" content="website">
+<title id="page-title">Loading...</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="site.config.js"></script>
+
+<style>
+  :root {
+    --bg:       #0d0d0e;
+    --bg2:      #141416;
+    --bg3:      #1a1a1d;
+    --line:     rgba(255,255,255,0.07);
+    --line2:    rgba(255,255,255,0.12);
+    --gold:     #c9a84c;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-glow:rgba(201,168,76,0.08);
+    --text:     #e8e4dc;
+    --text-muted:rgba(232,228,220,0.45);
+    --text-dim: rgba(232,228,220,0.65);
+    --mono:  'DM Mono', monospace;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans:  'Outfit', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Cursor */
+  .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s,opacity .2s; }
+  .cursor-ring { position:fixed; width:32px; height:32px; border:1px solid rgba(201,168,76,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .2s,height .2s; }
+
+  /* Grid */
+  body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px); background-size:80px 80px; pointer-events:none; z-index:0; }
+
+  /* Nav */
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:1.5rem 4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:rgba(13,13,14,0.85); backdrop-filter:blur(16px); }
+  .nav-logo { font-family:var(--mono); font-size:0.78rem; color:var(--gold); letter-spacing:0.15em; text-decoration:none; }
+  .nav-links { display:flex; gap:3rem; list-style:none; }
+  .nav-links a { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; transition:color .3s; }
+  .nav-links a:hover { color:var(--gold); }
+
+  /* Hero */
+  #hero { position:relative; min-height:100vh; display:flex; align-items:flex-end; padding:8rem 4rem 6rem; z-index:1; overflow:hidden; }
+  .hero-number { position:absolute; top:8rem; right:4rem; font-family:var(--mono); font-size:0.7rem; color:var(--text-muted); letter-spacing:0.1em; writing-mode:vertical-rl; display:flex; gap:1rem; align-items:center; }
+  .hero-number::before { content:''; display:block; width:1px; height:80px; background:var(--gold); opacity:0.5; }
+  .hero-content { max-width:900px; }
+  .hero-eyebrow { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.2em; color:var(--gold); text-transform:uppercase; margin-bottom:2rem; display:flex; align-items:center; gap:1rem; opacity:0; animation:fadeUp .8s ease forwards .2s; }
+  .hero-eyebrow::before { content:''; display:inline-block; width:40px; height:1px; background:var(--gold); }
+  h1.hero-name { font-family:var(--serif); font-size:clamp(4rem,9vw,9rem); font-weight:300; line-height:0.92; letter-spacing:-0.02em; color:var(--text); margin-bottom:2.5rem; opacity:0; animation:fadeUp 1s ease forwards .4s; }
+  h1.hero-name em { font-style:italic; color:var(--gold); }
+  .hero-tagline { font-family:var(--sans); font-size:1.05rem; font-weight:300; color:var(--text-dim); max-width:560px; line-height:1.8; border-left:1px solid var(--gold); padding-left:1.5rem; margin-left:2px; opacity:0; animation:fadeUp 1s ease forwards .6s; }
+  .hero-scroll { position:absolute; bottom:3rem; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:0.65rem; letter-spacing:0.2em; color:var(--text-muted); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:0.8rem; opacity:0; animation:fadeIn 1s ease forwards 1.2s; }
+  .hero-scroll::after { content:''; display:block; width:1px; height:60px; background:linear-gradient(to bottom,var(--gold),transparent); animation:scrollLine 2s ease-in-out infinite; }
+  .flame-bg { position:absolute; top:0; right:0; width:50%; height:100%; opacity:0.04; pointer-events:none; }
+
+  /* Sections */
+  section { position:relative; z-index:1; padding:7rem 4rem; }
+  .section-label { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.25em; color:var(--gold); text-transform:uppercase; margin-bottom:4rem; display:flex; align-items:center; gap:1.5rem; }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--line2); }
+
+  /* About */
+  #about { border-top:1px solid var(--line); }
+  .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:6rem; align-items:start; }
+  .about-left h2 { font-family:var(--serif); font-size:clamp(2.5rem,4vw,4rem); font-weight:300; line-height:1.1; margin-bottom:2rem; }
+  .about-left h2 em { font-style:italic; color:var(--gold); }
+  .about-right p { font-size:1rem; color:var(--text-dim); margin-bottom:1.5rem; line-height:1.9; }
+
+  /* Descriptors */
+  .descriptors { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-top:5rem; border:1px solid var(--line2); }
+  .descriptor { padding:2.5rem 2rem; border-right:1px solid var(--line2); position:relative; overflow:hidden; }
+  .descriptor:last-child { border-right:none; }
+  .descriptor::before { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .4s ease; }
+  .descriptor:hover::before { transform:scaleX(1); }
+  .descriptor-word { font-family:var(--serif); font-size:2.2rem; font-weight:300; font-style:italic; color:var(--gold); line-height:1; margin-bottom:0.8rem; }
+  .descriptor-detail { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; line-height:1.8; }
+
+  /* Research */
+  #research { border-top:1px solid var(--line); background:var(--bg2); }
+  .research-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
+  .research-card { background:var(--bg3); padding:2.5rem; border:1px solid var(--line); position:relative; overflow:hidden; transition:border-color .3s,background .3s; cursor:none; }
+  .research-card:hover { border-color:rgba(201,168,76,0.25); background:rgba(201,168,76,0.03); }
+  .research-card::before { content:''; position:absolute; top:0; left:0; width:3px; height:0; background:var(--gold); transition:height .4s ease; }
+  .research-card:hover::before { height:100%; }
+  .card-index { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.15em; margin-bottom:1.5rem; }
+  .card-title { font-family:var(--serif); font-size:1.5rem; font-weight:400; line-height:1.3; margin-bottom:1rem; color:var(--text); }
+  .card-desc { font-size:0.9rem; color:var(--text-muted); line-height:1.8; margin-bottom:1.5rem; }
+  .card-tags { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem; }
+  .tag { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.1em; color:var(--gold); border:1px solid rgba(201,168,76,0.3); padding:0.25rem 0.6rem; text-transform:uppercase; }
+  .card-read { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.12em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; border-bottom:1px solid var(--line2); padding-bottom:2px; transition:color .3s,border-color .3s; }
+  .card-read:hover { color:var(--gold); border-color:var(--gold); }
+  .card-reads { display:flex; flex-wrap:wrap; gap:1.25rem; margin-top:1.25rem; align-items:center; }
+
+  /* Projects */
+  #projects { border-top:1px solid var(--line); }
+  .projects-list { display:flex; flex-direction:column; }
+  .project-row { display:grid; grid-template-columns:5rem 1fr auto; align-items:center; gap:3rem; padding:2.5rem 0; border-bottom:1px solid var(--line); transition:padding .3s; cursor:none; text-decoration:none; color:inherit; }
+  .project-row:first-child { border-top:1px solid var(--line); }
+  .project-row:hover { padding-left:1rem; }
+  .project-row:hover .project-name { color:var(--gold); }
+  .project-num { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .project-name { font-family:var(--serif); font-size:1.6rem; font-weight:300; transition:color .3s; }
+  .project-sub { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
+  .project-arrow { font-size:1.5rem; color:var(--text-muted); opacity:0; transform:translateX(-10px); transition:opacity .3s,transform .3s; }
+  .project-row:hover .project-arrow { opacity:1; transform:translateX(0); color:var(--gold); }
+
+  /* Experience */
+  #experience { border-top:1px solid var(--line); background:var(--bg2); }
+  .exp-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+  .exp-item { padding:3rem; background:var(--bg3); border:1px solid var(--line); }
+  .exp-period { font-family:var(--mono); font-size:0.65rem; color:var(--gold); letter-spacing:0.15em; margin-bottom:1rem; }
+  .exp-role { font-family:var(--serif); font-size:1.4rem; margin-bottom:0.3rem; }
+  .exp-org { font-size:0.85rem; color:var(--text-dim); margin-bottom:1.5rem; }
+  .exp-desc { font-size:0.88rem; color:var(--text-muted); line-height:1.8; }
+
+  /* Blog */
+  #blog { border-top:1px solid var(--line); }
+  .blog-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4rem; }
+  .blog-header h2 { font-family:var(--serif); font-size:clamp(2rem,3vw,3rem); font-weight:300; }
+  .blog-header h2 em { font-style:italic; color:var(--gold); }
+  .blog-all { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.15em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; border-bottom:1px solid var(--line2); padding-bottom:2px; transition:color .3s,border-color .3s; }
+  .blog-all:hover { color:var(--gold); border-color:var(--gold); }
+
+  .blog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+  .blog-card { background:var(--bg2); padding:2rem; border:1px solid var(--line); display:flex; flex-direction:column; gap:0; transition:border-color .3s; cursor:none; text-decoration:none; color:inherit; position:relative; overflow:hidden; }
+  .blog-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:1px; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .4s ease; }
+  .blog-card:hover { border-color:rgba(201,168,76,0.2); }
+  .blog-card:hover::after { transform:scaleX(1); }
+  .blog-card:hover .blog-title { color:var(--gold); }
+
+  .blog-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; }
+  .blog-category { font-family:var(--mono); font-size:0.6rem; letter-spacing:0.12em; color:var(--gold); text-transform:uppercase; border:1px solid rgba(201,168,76,0.3); padding:0.2rem 0.5rem; }
+  .blog-date { font-family:var(--mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.08em; }
+  .blog-title { font-family:var(--serif); font-size:1.25rem; font-weight:400; line-height:1.35; margin-bottom:0.8rem; transition:color .3s; }
+  .blog-excerpt { font-size:0.83rem; color:var(--text-muted); line-height:1.75; flex:1; margin-bottom:1.5rem; }
+  .blog-footer { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:1rem; border-top:1px solid var(--line); }
+  .blog-read-time { font-family:var(--mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .blog-arrow { font-size:1rem; color:var(--text-muted); transition:color .3s,transform .3s; }
+  .blog-card:hover .blog-arrow { color:var(--gold); transform:translateX(4px); }
+
+  /* Category color variants */
+  .cat-research  { color: #7fb3d3; border-color: rgba(127,179,211,0.3); }
+  .cat-opinion   { color: #c4956a; border-color: rgba(196,149,106,0.3); }
+  .cat-project   { color: #82c9a0; border-color: rgba(130,201,160,0.3); }
+  .cat-essay     { color: #b09fd6; border-color: rgba(176,159,214,0.3); }
+
+  /* Awards */
+  #awards { border-top:1px solid var(--line); }
+  .awards-list { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+  .award-item { padding:2rem 2.5rem; background:var(--bg2); border:1px solid var(--line); position:relative; overflow:hidden; transition:border-color .3s; }
+  .award-item::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .4s ease; }
+  .award-item:hover { border-color:rgba(201,168,76,0.25); }
+  .award-item:hover::before { transform:scaleX(1); }
+  .award-year { font-family:var(--mono); font-size:0.65rem; color:var(--gold); letter-spacing:0.15em; margin-bottom:0.6rem; }
+  .award-title { font-family:var(--serif); font-size:1.3rem; font-weight:400; line-height:1.3; margin-bottom:0.4rem; }
+  .award-detail { font-size:0.85rem; color:var(--text-muted); }
+
+  /* Contact */
+  #contact { border-top:1px solid var(--line); background:var(--bg2); text-align:center; padding:10rem 4rem; }
+  .contact-pre { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.25em; color:var(--gold); text-transform:uppercase; margin-bottom:2rem; }
+  .contact-heading { font-family:var(--serif); font-size:clamp(3rem,6vw,6rem); font-weight:300; line-height:1.05; margin-bottom:3rem; }
+  .contact-heading em { font-style:italic; color:var(--gold); }
+  .contact-sub { color:var(--text-muted); max-width:500px; margin:0 auto; font-size:1rem; line-height:1.8; }
+  .contact-links { display:flex; gap:2rem; justify-content:center; flex-wrap:wrap; margin-top:3rem; }
+  .contact-link { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.15em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; padding:0.9rem 2rem; border:1px solid var(--line2); transition:all .3s; }
+  .contact-link:hover { color:var(--gold); border-color:var(--gold); background:var(--gold-glow); }
+  .contact-link.primary { color:var(--bg); background:var(--gold); border-color:var(--gold); }
+  .contact-link.primary:hover { background:transparent; color:var(--gold); }
+
+  /* Footer */
+  footer { position:relative; z-index:1; padding:2rem 4rem; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  .footer-copy { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; }
+  .footer-loc { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.1em; display:flex; align-items:center; gap:0.5rem; }
+  .loc-dot { width:5px; height:5px; border-radius:50%; background:var(--gold); animation:pulse 2s ease-in-out infinite; }
+
+  /* Animations */
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+  @keyframes scrollLine { 0%,100%{opacity:.3} 50%{opacity:1} }
+  @keyframes pulse    { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+  .reveal { opacity:0; transform:translateY(30px); transition:opacity .8s ease,transform .8s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* Mobile */
+  @media(max-width:768px){
+    nav{padding:1.25rem 1.5rem;}
+    .nav-links{display:none;}
+    section{padding:5rem 1.5rem;}
+    #hero{padding:8rem 1.5rem 5rem;}
+    .about-grid,.exp-grid{grid-template-columns:1fr;gap:3rem;}
+    .research-grid,.blog-grid,.awards-list{grid-template-columns:1fr;}
+    .descriptors{grid-template-columns:1fr;}
+    .descriptor{border-right:none;border-bottom:1px solid var(--line2);}
+    .project-row{grid-template-columns:3rem 1fr auto;gap:1rem;}
+    footer{flex-direction:column;gap:.5rem;text-align:center;}
+    .contact-links{flex-direction:column;align-items:center;}
+    body{cursor:auto;}
+    .cursor,.cursor-ring{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav id="nav"></nav>
+
+<section id="hero">
+  <svg class="flame-bg" viewBox="0 0 600 900" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <path d="M300 900 C 200 700,100 600,180 400 C220 300,160 200,300 100 C380 180,340 280,380 380 C420 480,480 550,420 700 Z" fill="white"/>
+    <path d="M300 780 C 230 640,170 560,220 420 C250 350,210 270,300 180 C360 250,330 330,360 410 C390 490,430 560,380 680 Z" fill="white"/>
+  </svg>
+  <div class="hero-number" id="hero-location"></div>
+  <div class="hero-content" id="hero-content"></div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<section id="about">
+  <div class="section-label" id="about-label"></div>
+  <div id="about-content"></div>
+</section>
+
+<section id="research">
+  <div class="section-label" id="research-label"></div>
+  <div class="research-grid" id="research-grid"></div>
+</section>
+
+<section id="projects">
+  <div class="section-label" id="projects-label"></div>
+  <div class="projects-list" id="projects-list"></div>
+</section>
+
+<section id="experience">
+  <div class="section-label" id="exp-label"></div>
+  <div class="exp-grid" id="exp-grid"></div>
+</section>
+
+<section id="awards">
+  <div class="section-label" id="awards-label"></div>
+  <div class="awards-list" id="awards-list"></div>
+</section>
+
+<section id="blog">
+  <div class="blog-header" id="blog-header"></div>
+  <div class="blog-grid" id="blog-grid"></div>
+</section>
+
+<section id="contact">
+  <div id="contact-content"></div>
+</section>
+
+<footer id="footer"></footer>
+
+<script>
+// ═══════════════════════════════════════════
+//  RENDERER — reads SITE_CONFIG, writes DOM
+// ═══════════════════════════════════════════
+const C = SITE_CONFIG;
+
+// Helpers
+const $ = id => document.getElementById(id);
+const categoryClass = cat => `cat-${cat}`;
+
+// Page title
+document.title = `${C.identity.firstName} ${C.identity.lastName} — Researcher & Engineer`;
+
+// ── NAV ──
+$('nav').innerHTML = `
+  <a href="#hero" class="nav-logo">${C.identity.initials} // ${C.identity.year}</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#awards">Recognition</a></li>
+    <li><a href="/blog/">Blog</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+`;
+
+// ── HERO ──
+$('hero-location').textContent = C.identity.location;
+$('hero-content').innerHTML = `
+  <div class="hero-eyebrow">${C.identity.eyebrow}</div>
+  <h1 class="hero-name">${C.identity.firstName}<br><em>${C.identity.lastName}</em></h1>
+  <p class="hero-tagline">${C.identity.tagline}</p>
+`;
+
+// ── ABOUT ──
+$('about-label').innerHTML = `01 &mdash; About`;
+
+const headlineLines = C.about.headline;
+const headlineHTML = headlineLines.map((line, i) =>
+  i === headlineLines.length - 1 ? `<em>${line}</em>` : line
+).join('<br>');
+
+const paragraphsHTML = C.about.paragraphs.map(p => `<p>${p}</p>`).join('');
+
+const descriptorsHTML = C.about.descriptors.map(d => `
+  <div class="descriptor">
+    <div class="descriptor-word">${d.word}</div>
+    <div class="descriptor-detail">${d.detail}</div>
+  </div>
+`).join('');
+
+$('about-content').innerHTML = `
+  <div class="about-grid">
+    <div class="about-left reveal"><h2>${headlineHTML}</h2></div>
+    <div class="about-right reveal">${paragraphsHTML}</div>
+  </div>
+  <div class="descriptors reveal">${descriptorsHTML}</div>
+`;
+
+// ── RESEARCH ──
+$('research-label').innerHTML = `02 &mdash; Research`;
+$('research-grid').innerHTML = C.research.map(r => {
+  const paper = r.link
+    ? `<a href="${r.link}" target="_blank" rel="noopener noreferrer" class="card-read">View paper &rarr;</a>`
+    : '';
+  const blogSlug = typeof r.blogSlug === 'string' ? r.blogSlug.trim() : '';
+  const blog = blogSlug
+    ? `<a href="blog/html/${blogSlug}.html" class="card-read">Read deep-dive &rarr;</a>`
+    : '';
+  const reads = paper || blog ? `<div class="card-reads">${paper}${blog}</div>` : '';
+  return `
+  <div class="research-card reveal">
+    <div class="card-index">${r.index}</div>
+    <div class="card-title">${r.title}</div>
+    <div class="card-desc">${r.description}</div>
+    <div class="card-tags">${r.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    ${reads}
+  </div>`;
+}).join('');
+
+// ── PROJECTS ──
+$('projects-label').innerHTML = `03 &mdash; Projects`;
+$('projects-list').innerHTML = C.projects.map(p => {
+  const tag   = p.link ? 'a' : 'div';
+  const attrs = p.link ? ` href="${p.link}" target="_blank"` : '';
+  return `<${tag} class="project-row reveal"${attrs}>
+    <div class="project-num">${p.num}</div>
+    <div>
+      <div class="project-name">${p.name}</div>
+      <div class="project-sub">${p.subtitle}</div>
+    </div>
+    <div class="project-arrow">${p.link ? '&rarr;' : ''}</div>
+  </${tag}>`;
+}).join('');
+
+// ── EXPERIENCE ──
+$('exp-label').innerHTML = `04 &mdash; Experience`;
+$('exp-grid').innerHTML = C.experience.map(e => `
+  <div class="exp-item reveal">
+    <div class="exp-period">${e.period}</div>
+    <div class="exp-role">${e.role}</div>
+    <div class="exp-org">${e.org}</div>
+    <div class="exp-desc">${e.description}</div>
+  </div>
+`).join('');
+
+// ── AWARDS ──
+$('awards-label').innerHTML = `05 &mdash; Recognition`;
+$('awards-list').innerHTML = C.awards.map(a => `
+  <div class="award-item reveal">
+    <div class="award-year">${a.year}</div>
+    <div class="award-title">${a.title}</div>
+    <div class="award-detail">${a.detail}</div>
+  </div>
+`).join('');
+
+// ── BLOG (featured on homepage; full list at /blog/) ──
+const publishedBlog = C.blog.filter(post => post.published);
+const featuredBlog  = publishedBlog.filter(post => post.featured);
+
+$('blog-header').innerHTML = `
+  <div>
+    <div class="section-label" style="margin-bottom:1rem;">06 &mdash; Blog</div>
+    <h2>Ideas,<br>written <em>down.</em></h2>
+  </div>
+  ${publishedBlog.length ? '<a href="/blog/" class="blog-all">All posts &rarr;</a>' : ''}
+`;
+
+$('blog-grid').innerHTML = featuredBlog.map(post => `
+  <a class="blog-card reveal" href="blog/html/${post.slug}.html">
+    <div class="blog-meta">
+      <span class="blog-category ${categoryClass(post.category)}">${post.category}</span>
+      <span class="blog-date">${post.date}</span>
+    </div>
+    <div class="blog-title">${post.title}</div>
+    <div class="blog-excerpt">${post.excerpt}</div>
+    <div class="blog-footer">
+      <span class="blog-read-time">${post.readTime} read</span>
+      <span class="blog-arrow">&rarr;</span>
+    </div>
+  </a>
+`).join('');
+
+// ── CONTACT ──
+const links = C.links;
+const extraLinks = [
+  links.linkedin ? `<a href="${links.linkedin}" target="_blank" class="contact-link">LinkedIn</a>` : '',
+  links.arxiv    ? `<a href="${links.arxiv}"    target="_blank" class="contact-link">arXiv</a>` : '',
+  links.scholar  ? `<a href="${links.scholar}"  target="_blank" class="contact-link">Scholar</a>` : '',
+  links.github   ? `<a href="${links.github}"   target="_blank" class="contact-link">GitHub</a>` : '',
+  links.twitter  ? `<a href="${links.twitter}"  target="_blank" class="contact-link">X / Twitter</a>` : '',
+  links.cv       ? `<a href="${links.cv}"       class="contact-link">CV / Resume</a>` : '',
+].filter(Boolean).join('');
+
+$('contact-content').innerHTML = `
+  <div class="contact-pre">Let's connect</div>
+  <div class="contact-heading">Built to<br><em>collaborate.</em></div>
+  <p class="contact-sub">Whether it's research collaboration, engineering problems, or just a conversation about intelligent systems — I'm always open.</p>
+  <div class="contact-links">
+    <a href="mailto:${C.identity.email}" class="contact-link primary">Get in Touch</a>
+    ${extraLinks}
+  </div>
+`;
+
+// ── FOOTER ──
+$('footer').innerHTML = `
+  <div class="footer-copy">&copy; ${C.identity.year} ${C.identity.firstName} ${C.identity.lastName}. All rights reserved.</div>
+  <div class="footer-loc"><div class="loc-dot"></div>${C.identity.location}</div>
+`;
+
+// ═══════════════════════════════════════════
+//  CURSOR
+// ═══════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cursor.style.left=mx+'px';
+  cursor.style.top=my+'px';
+});
+
+(function animateRing(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animateRing);
+})();
+
+document.querySelectorAll('a,button,.research-card,.blog-card,.descriptor').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{
+    cursor.style.width='14px'; cursor.style.height='14px';
+    ring.style.width='48px';  ring.style.height='48px';
+  });
+  el.addEventListener('mouseleave',()=>{
+    cursor.style.width='8px';  cursor.style.height='8px';
+    ring.style.width='32px';  ring.style.height='32px';
+  });
+});
+
+// ═══════════════════════════════════════════
+//  SCROLL REVEAL
+// ═══════════════════════════════════════════
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); }
+  });
+},{threshold:0.08});
+
+// Observe after render (elements injected by JS)
+setTimeout(()=>{ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el)); },50);
+</script>
+
+</body>
+</html>
