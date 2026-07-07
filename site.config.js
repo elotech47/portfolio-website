@@ -155,13 +155,6 @@ const SITE_CONFIG = {
       link:     null
     },
     {
-      id:       "bdf",
-      num:      "006",
-      name:     "Custom BDF Integrator",
-      subtitle: "From-scratch Python BDF solver for stiff combustion ODEs — significant speedup over SciPy Radau",
-      link:     null
-    },
-    {
       id:       "llm-training",
       num:      "007",
       name:     "GPT-2 Scale LLM Training",
