@@ -35,7 +35,7 @@ const SITE_CONFIG = {
     paragraphs: [
       "I'm a PhD candidate (and concurrent Master's student) in Mechanical Engineering at Louisiana State University, specializing in reinforcement learning for adaptive ODE solver selection in combustion simulations — with a minor in Computer Science. My research sits at a rare intersection: making physics solvers smarter using AI decision layers.",
       "Previously, I worked as a Machine Learning Engineer at RIGR AI in Ireland, building AI systems for child protection and law enforcement. I contributed to an INTERPOL technical working group alongside work on dark-web scraping pipelines, semantic search engines, and deep learning models aimed at global public safety.",
-      "My dissertation centers on RL as a decision layer for adaptive modeling in complex physical systems, with peer-reviewed publications spanning combustion science, multi-agent optimization, and biosensor AI. I am a co-inventor on a pending U.S. patent application for deep reinforcement learning applied to oil and gas field development — filed following internship work at Halliburton (not yet granted)."
+      "My dissertation centers on RL as a decision layer for adaptive modeling in complex physical systems, with peer-reviewed publications spanning combustion science, multi-agent optimization, and biosensor AI. I am a co-inventor on a pending U.S. patent application for deep reinforcement learning applied to oil and gas field development, filed following internship work at Halliburton."
     ],
     descriptors: [
       {
@@ -44,13 +44,21 @@ const SITE_CONFIG = {
       },
       {
         word:   "Builder",
-        detail: "FoamPilot · AXIS · SciDraft · ScholarSync · Custom solvers · LLMs"
+        detail: "FoamPilot · SciDraft · Turnwise · GPT-2 training · Custom solvers · LLMs"
       },
       {
         word:   "Storyteller",
         detail: "Sci-fi writer · AI literacy advocate · INTERPOL technical working group · Global"
       }
-    ]
+    ],
+
+    // Optional figure closing the About section. Set to null to remove it.
+    figure: {
+      src:     "assets/flame-contours-rl-vs-seulex.jpg",
+      alt:     "Temperature and OH mass fraction fields at 750, 1100 and 1500 microseconds, with the SEULEX reference solver beside the learned RL policy",
+      label:   "LES Spray A · CB11a",
+      caption: "Temperature and OH fields at three instants through the injection. Reference integrator on the left, the learned policy on the right."
+    }
   },
 
   // ─────────────────────────────────────────
@@ -58,11 +66,20 @@ const SITE_CONFIG = {
   //  Optional blog deep-dive: set blogSlug only when blog/html/<slug>.html exists
   //  (after `node build.js`). Omit or use null to hide "Read deep-dive" on the card.
   // ─────────────────────────────────────────
+  // Featured animation at the top of the research section.
+  // Set to null to remove it.
+  researchFeature: {
+    video:   "assets/solver-selection-les.mp4",
+    poster:  "assets/solver-selection-poster.jpg",
+    label:   "LES Spray A · RL solver selection (CB11a)",
+    caption: "The policy picking an integrator for every chemistry cell, live, through an injection. Green is QSS, purple the learned surrogate; the lower right panel tracks whole-simulation speed-up against a fixed SEULEX baseline."
+  },
+
   research: [
     {
       id:          "rl-solver",
       index:       "arXiv · 2604.00264",
-      title:       "RL-Based Adaptive ODE Solver Selection for Combustion Simulations",
+      title:       "Autonomous Adaptive Solver Selection for Chemistry Integration via Reinforcement Learning",
       description: "A PPO agent with Lagrangian constraint formulation learns to dynamically switch between CVODE and QSS integrators across 0D/1D chemical kinetics environments — significant speedup with maintained accuracy bounds.",
       tags:        ["Reinforcement Learning", "Combustion", "ODE Solvers", "PPO"],
       link:        "https://arxiv.org/abs/2604.00264",
@@ -124,39 +141,25 @@ const SITE_CONFIG = {
       num:      "001",
       name:     "FoamPilot",
       subtitle: "Agentic OpenFOAM CFD workflow automation — template-first RAG, 5-agent orchestrator, FastAPI + Docker",
-      link:     null
-    },
-    {
-      id:       "axis",
-      num:      "002",
-      name:     "AXIS",
-      subtitle: "Self-hosted personal AI operating system — Telegram + web UI + CLI, running on local server",
-      link:     null
+      link:     "https://github.com/elotech47/foampilot"
     },
     {
       id:       "scidraft",
-      num:      "003",
+      num:      "002",
       name:     "SciDraft",
-      subtitle: "AI-powered scientific writing platform — end-to-end LLM pipeline for literature discovery, RAG, and citation management",
-      link:     null
+      subtitle: "Scientific writing platform for researchers — AI-assisted drafting, literature discovery, and citation management",
+      link:     "https://scidraft.com"
     },
     {
-      id:       "scholarsync",
-      num:      "004",
-      name:     "ScholarSync",
-      subtitle: "LLM-enabled PDF document intelligence — conversational Q&A, semantic chunking, and interactive research exploration",
-      link:     null
-    },
-    {
-      id:       "marginalia",
-      num:      "005",
-      name:     "Marginalia",
-      subtitle: "Chrome extension for research annotation — FastAPI + Supabase backend, semantic search",
-      link:     null
+      id:       "turnwise",
+      num:      "003",
+      name:     "Turnwise",
+      subtitle: "Local-first audio transcription for qualitative research — speaker diarization and AI-assisted coding, on-device",
+      link:     "https://getturnwise.com"
     },
     {
       id:       "llm-training",
-      num:      "007",
+      num:      "004",
       name:     "GPT-2 Scale LLM Training",
       subtitle: "~460M parameter model trained from scratch on 7B tokens — FineWeb-Edu, OWT, Wikipedia, StarCoder",
       link:     null
@@ -177,10 +180,10 @@ const SITE_CONFIG = {
       period:      "May — Aug 2025",
       role:        "Research Intern — GNN + RL Proxy Modeling",
       org:         "Halliburton Energy Services, Houston TX",
-      description: "Designed and implemented a GNN-based RL system for reservoir field development optimization — 23% improvement in spatial decision-making over traditional approaches. Engineered scalable training environment integrating proprietary simulation tools. Co-inventor on a pending U.S. patent application for a novel deep RL approach to oil and gas field development (not yet granted)."
+      description: "Designed and implemented a GNN-based RL system for reservoir field development optimization — 23% improvement in spatial decision-making over traditional approaches. Engineered scalable training environment integrating proprietary simulation tools. Co-inventor on a pending U.S. patent application for a novel deep RL approach to oil and gas field development."
     },
     {
-      period:      "2021 — 2026",
+      period:      "Jun 2021 — Aug 2022",
       role:        "Machine Learning Engineer",
       org:         "RIGR AI, Cork, Ireland (Remote)",
       description: "AI systems for child protection and law enforcement. Contributed via the INTERPOL technical working group. Built AI-based adaptive scrapers for dark web forums (ARICA project), enterprise semantic search using Vespa AI, GPU-accelerated summarization on AWS/Azure, and deep learning models for child sexual exploitation detection."
@@ -236,10 +239,10 @@ const SITE_CONFIG = {
       published: true,
       featured:  true,
       category:  "research",
-      date:      "May 2025",
+      date:      "May 2026",
       title:     "How I Taught a Reinforcement Learning Agent to Choose ODE Solvers",
       excerpt:   "A deep dive into the PPO + Lagrangian constraint formulation that drives my combustion simulation speedup work — benchmarks, failure modes, and what the ablation studies revealed.",
-      readTime:  "12 min",
+      readTime:  "5 min",
       tags:      ["RL", "Combustion", "ODE", "PPO"]
     },
     {
@@ -247,10 +250,10 @@ const SITE_CONFIG = {
       published: true,
       featured:  true,
       category:  "opinion",
-      date:      "April 2025",
+      date:      "March 2026",
       title:     "Africa Cannot Afford to Be Late to AI — Again",
       excerpt:   "The window for African nations to build foundational AI capacity is narrower than it appears. What needs to happen at the infrastructure, education, and policy levels — and why it matters personally.",
-      readTime:  "8 min",
+      readTime:  "4 min",
       tags:      ["AI Literacy", "Nigeria", "Africa", "Policy"]
     },
     {

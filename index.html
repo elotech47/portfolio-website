@@ -4,9 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Eloghosa Ikponmwoba — PhD Candidate at LSU. Research in reinforcement learning for combustion simulations, multi-agent RL, GNN proxy modeling; previously ML Engineer at RIGR AI (INTERPOL technical working group).">
+<link rel="canonical" href="https://elotechy.com/">
 <meta property="og:title" content="Eloghosa Ikponmwoba — Researcher & Engineer">
 <meta property="og:description" content="PhD Candidate at LSU. Building intelligent systems at the intersection of physical simulation and reinforcement learning; formerly ML Engineer at RIGR AI.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://elotechy.com/">
+<meta property="og:site_name" content="Eloghosa Ikponmwoba">
+<meta property="og:image" content="https://elotechy.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Eloghosa Ikponmwoba — reinforcement learning for physical simulation">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@el0tech">
+<meta name="twitter:creator" content="@el0tech">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0d0d0e">
 <title id="page-title">Loading...</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,11 +66,29 @@
   body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px); background-size:80px 80px; pointer-events:none; z-index:0; }
 
   /* Nav */
-  nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:1.5rem 4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:rgba(13,13,14,0.85); backdrop-filter:blur(16px); }
+  nav { position:fixed; top:0; left:0; right:0; z-index:130; padding:1.5rem 4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); background:rgba(13,13,14,0.85); backdrop-filter:blur(16px); }
   .nav-logo { font-family:var(--mono); font-size:0.78rem; color:var(--gold); letter-spacing:0.15em; text-decoration:none; }
   .nav-links { display:flex; gap:3rem; list-style:none; }
   .nav-links a { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; color:var(--text-muted); text-decoration:none; text-transform:uppercase; transition:color .3s; }
   .nav-links a:hover { color:var(--gold); }
+
+  /* Mobile nav toggle + drawer */
+  .nav-toggle { display:none; flex-direction:column; align-items:center; justify-content:center; gap:5px; width:42px; height:42px; padding:0; background:none; border:1px solid var(--line2); cursor:pointer; transition:border-color .3s; }
+  .nav-toggle:hover, .nav-toggle:focus-visible { border-color:var(--gold); }
+  .nav-toggle span { display:block; width:18px; height:1px; background:var(--gold); transition:transform .3s ease, opacity .2s ease; }
+  .nav-toggle[aria-expanded="true"] span:nth-child(1) { transform:translateY(6px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity:0; }
+  .nav-toggle[aria-expanded="true"] span:nth-child(3) { transform:translateY(-6px) rotate(-45deg); }
+
+  .mobile-nav { position:fixed; top:0; right:0; bottom:0; width:min(80vw,320px); z-index:120; background:var(--bg); border-left:1px solid var(--line2); padding:6.5rem 2rem 2rem; overflow-y:auto; transform:translateX(100%); visibility:hidden; transition:transform .35s ease, visibility .35s; }
+  .mobile-nav.open { transform:translateX(0); visibility:visible; }
+  .mobile-nav ul { list-style:none; }
+  .mobile-nav li { border-bottom:1px solid var(--line); }
+  .mobile-nav a { display:block; padding:1.15rem 0; font-family:var(--mono); font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-dim); text-decoration:none; transition:color .3s; }
+  .mobile-nav a:hover, .mobile-nav a:focus-visible { color:var(--gold); }
+  .nav-backdrop { position:fixed; inset:0; z-index:110; background:rgba(0,0,0,0.6); opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s; }
+  .nav-backdrop.open { opacity:1; visibility:visible; }
+  @media(min-width:769px){ .mobile-nav, .nav-backdrop { display:none; } }
 
   /* Hero */
   #hero { position:relative; min-height:100vh; display:flex; align-items:flex-end; padding:8rem 4rem 6rem; z-index:1; overflow:hidden; }
@@ -68,7 +100,7 @@
   h1.hero-name { font-family:var(--serif); font-size:clamp(4rem,9vw,9rem); font-weight:300; line-height:0.92; letter-spacing:-0.02em; color:var(--text); margin-bottom:2.5rem; opacity:0; animation:fadeUp 1s ease forwards .4s; }
   h1.hero-name em { font-style:italic; color:var(--gold); }
   .hero-tagline { font-family:var(--sans); font-size:1.05rem; font-weight:300; color:var(--text-dim); max-width:560px; line-height:1.8; border-left:1px solid var(--gold); padding-left:1.5rem; margin-left:2px; opacity:0; animation:fadeUp 1s ease forwards .6s; }
-  .hero-scroll { position:absolute; bottom:3rem; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:0.65rem; letter-spacing:0.2em; color:var(--text-muted); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:0.8rem; opacity:0; animation:fadeIn 1s ease forwards 1.2s; }
+  .hero-scroll { position:absolute; bottom:3rem; right:4rem; font-family:var(--mono); font-size:0.65rem; letter-spacing:0.2em; color:var(--text-muted); text-transform:uppercase; display:flex; flex-direction:column; align-items:center; gap:0.8rem; opacity:0; animation:fadeIn 1s ease forwards 1.2s; }
   .hero-scroll::after { content:''; display:block; width:1px; height:60px; background:linear-gradient(to bottom,var(--gold),transparent); animation:scrollLine 2s ease-in-out infinite; }
   .flame-bg { position:absolute; top:0; right:0; width:50%; height:100%; opacity:0.04; pointer-events:none; }
 
@@ -94,7 +126,21 @@
   .descriptor-detail { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; line-height:1.8; }
 
   /* Research */
+  /* Figures and media */
+  .figure { margin:4rem 0 0; }
+  .figure img, .figure video { display:block; width:100%; height:auto; border:1px solid var(--line2); background:var(--bg3); }
+  .figure a { display:block; cursor:none; }
+  .figure a:hover img { border-color:rgba(201,168,76,0.35); }
+  .figure-meta { display:flex; flex-wrap:wrap; gap:0.6rem 1.5rem; align-items:baseline; margin-top:1rem; }
+  .figure-label { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); white-space:nowrap; }
+  .figure-caption { font-size:0.85rem; line-height:1.7; color:var(--text-muted); max-width:62ch; }
+  .figure-video { position:relative; }
+  .figure-video video { cursor:none; }
+  /* Tall figures read as a plate, not a takeover */
+  .figure-portrait { max-width:820px; }
+
   #research { border-top:1px solid var(--line); background:var(--bg2); }
+  .research-feature { margin:0 0 4rem; }
   .research-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
   .research-card { background:var(--bg3); padding:2.5rem; border:1px solid var(--line); position:relative; overflow:hidden; transition:border-color .3s,background .3s; cursor:none; }
   .research-card:hover { border-color:rgba(201,168,76,0.25); background:rgba(201,168,76,0.03); }
@@ -121,6 +167,8 @@
   .project-sub { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
   .project-arrow { font-size:1.5rem; color:var(--text-muted); opacity:0; transform:translateX(-10px); transition:opacity .3s,transform .3s; }
   .project-row:hover .project-arrow { opacity:1; transform:translateX(0); color:var(--gold); }
+  /* Touch devices never hover — show the arrow so linked rows read as links */
+  @media (hover:none){ .project-arrow { opacity:0.5; transform:none; color:var(--gold); } }
 
   /* Experience */
   #experience { border-top:1px solid var(--line); background:var(--bg2); }
@@ -199,12 +247,26 @@
   .reveal { opacity:0; transform:translateY(30px); transition:opacity .8s ease,transform .8s ease; }
   .reveal.visible { opacity:1; transform:translateY(0); }
 
+  /* Very short viewports — no room for the scroll cue below the tagline */
+  @media(max-height:700px){ .hero-scroll{display:none;} }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+    html { scroll-behavior:auto; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    .hero-eyebrow, h1.hero-name, .hero-tagline, .hero-scroll { opacity:1 !important; animation:none !important; }
+  }
+
   /* Mobile */
   @media(max-width:768px){
     nav{padding:1.25rem 1.5rem;}
     .nav-links{display:none;}
+    .nav-toggle{display:flex;}
     section{padding:5rem 1.5rem;}
     #hero{padding:8rem 1.5rem 5rem;}
+    .hero-number{display:none;}
+    .hero-scroll{display:none;}
     .about-grid,.exp-grid{grid-template-columns:1fr;gap:3rem;}
     .research-grid,.blog-grid,.awards-list{grid-template-columns:1fr;}
     .descriptors{grid-template-columns:1fr;}
@@ -223,6 +285,8 @@
 <div class="cursor-ring" id="cursor-ring"></div>
 
 <nav id="nav"></nav>
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<aside class="mobile-nav" id="mobile-nav" aria-label="Site navigation" aria-hidden="true"></aside>
 
 <section id="hero">
   <svg class="flame-bg" viewBox="0 0 600 900" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -241,6 +305,7 @@
 
 <section id="research">
   <div class="section-label" id="research-label"></div>
+  <div class="research-feature" id="research-feature"></div>
   <div class="research-grid" id="research-grid"></div>
 </section>
 
@@ -284,18 +349,25 @@ const categoryClass = cat => `cat-${cat}`;
 document.title = `${C.identity.firstName} ${C.identity.lastName} — Researcher & Engineer`;
 
 // ── NAV ──
+const NAV_ITEMS = [
+  ['#about',      'About'],
+  ['#research',   'Research'],
+  ['#projects',   'Projects'],
+  ['#experience', 'Experience'],
+  ['#awards',     'Recognition'],
+  ['/blog/',      'Blog'],
+  ['#contact',    'Contact'],
+];
+const navItemsHTML = NAV_ITEMS.map(([href, label]) => `<li><a href="${href}">${label}</a></li>`).join('');
+
 $('nav').innerHTML = `
   <a href="#hero" class="nav-logo">${C.identity.initials} // ${C.identity.year}</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#research">Research</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#experience">Experience</a></li>
-    <li><a href="#awards">Recognition</a></li>
-    <li><a href="/blog/">Blog</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
+  <ul class="nav-links">${navItemsHTML}</ul>
+  <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+    <span></span><span></span><span></span>
+  </button>
 `;
+$('mobile-nav').innerHTML = `<ul>${navItemsHTML}</ul>`;
 
 // ── HERO ──
 $('hero-location').textContent = C.identity.location;
@@ -322,16 +394,41 @@ const descriptorsHTML = C.about.descriptors.map(d => `
   </div>
 `).join('');
 
+const aboutFigure = C.about.figure;
+const aboutFigureHTML = aboutFigure ? `
+  <figure class="figure figure-portrait reveal">
+    <a href="${aboutFigure.src}" target="_blank" rel="noopener noreferrer">
+      <img src="${aboutFigure.src}" alt="${aboutFigure.alt}" loading="lazy" decoding="async">
+    </a>
+    <figcaption class="figure-meta">
+      <span class="figure-label">${aboutFigure.label}</span>
+      <span class="figure-caption">${aboutFigure.caption}</span>
+    </figcaption>
+  </figure>` : '';
+
 $('about-content').innerHTML = `
   <div class="about-grid">
     <div class="about-left reveal"><h2>${headlineHTML}</h2></div>
     <div class="about-right reveal">${paragraphsHTML}</div>
   </div>
   <div class="descriptors reveal">${descriptorsHTML}</div>
+  ${aboutFigureHTML}
 `;
 
 // ── RESEARCH ──
 $('research-label').innerHTML = `02 &mdash; Research`;
+
+const feature = C.researchFeature;
+$('research-feature').innerHTML = feature ? `
+  <figure class="figure figure-video reveal" style="margin-top:0">
+    <video id="feature-video" poster="${feature.poster}" muted loop playsinline preload="none" controls aria-label="${feature.caption}">
+      <source src="${feature.video}" type="video/mp4">
+    </video>
+    <figcaption class="figure-meta">
+      <span class="figure-label">${feature.label}</span>
+      <span class="figure-caption">${feature.caption}</span>
+    </figcaption>
+  </figure>` : '';
 $('research-grid').innerHTML = C.research.map(r => {
   const paper = r.link
     ? `<a href="${r.link}" target="_blank" rel="noopener noreferrer" class="card-read">View paper &rarr;</a>`
@@ -442,6 +539,28 @@ $('footer').innerHTML = `
 `;
 
 // ═══════════════════════════════════════════
+//  MOBILE NAV
+// ═══════════════════════════════════════════
+const navToggle   = $('nav-toggle');
+const mobileNav   = $('mobile-nav');
+const navBackdrop = $('nav-backdrop');
+
+function setNav(open) {
+  navToggle.setAttribute('aria-expanded', String(open));
+  navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  mobileNav.classList.toggle('open', open);
+  mobileNav.setAttribute('aria-hidden', String(!open));
+  navBackdrop.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+navToggle.addEventListener('click', () => setNav(!mobileNav.classList.contains('open')));
+navBackdrop.addEventListener('click', () => setNav(false));
+mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setNav(false)));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setNav(false); });
+window.addEventListener('resize', () => { if (window.innerWidth > 768) setNav(false); });
+
+// ═══════════════════════════════════════════
 //  CURSOR
 // ═══════════════════════════════════════════
 const cursor = document.getElementById('cursor');
@@ -474,14 +593,45 @@ document.querySelectorAll('a,button,.research-card,.blog-card,.descriptor').forE
 // ═══════════════════════════════════════════
 //  SCROLL REVEAL
 // ═══════════════════════════════════════════
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); }
-  });
-},{threshold:0.08});
+const revealAll = () => document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Observe after render (elements injected by JS)
-setTimeout(()=>{ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el)); },50);
+if (!('IntersectionObserver' in window) || prefersReducedMotion) {
+  // No observer, or the visitor asked for less motion — show everything up front
+  // rather than leaving content stuck at opacity:0.
+  setTimeout(revealAll, 50);
+} else {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  },{threshold:0.08});
+
+  // Observe after render (elements injected by JS)
+  setTimeout(()=>{ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el)); },50);
+}
+
+// ═══════════════════════════════════════════
+//  FEATURE VIDEO
+// ═══════════════════════════════════════════
+// Plays when scrolled into view, but only where autoplay is welcome: not when
+// the visitor asked for less motion, and not on a metered connection. The
+// controls stay available either way, and preload is left at "none" until we
+// know we're going to play it.
+const featureVideo = $('feature-video');
+if (featureVideo) {
+  const saveData = navigator.connection && navigator.connection.saveData;
+  if (!prefersReducedMotion && !saveData && 'IntersectionObserver' in window) {
+    featureVideo.preload = 'metadata';
+    const videoObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) featureVideo.play().catch(() => {});
+        else featureVideo.pause();
+      });
+    }, {threshold:0.35});
+    videoObserver.observe(featureVideo);
+  }
+}
 </script>
 
 </body>

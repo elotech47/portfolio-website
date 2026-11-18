@@ -4,7 +4,7 @@ category: opinion
 date: March 2026
 title: Africa Cannot Afford to Be Late to AI — Again
 excerpt: The window for African nations to build foundational AI capacity is narrower than it appears. What needs to happen at the infrastructure, education, and policy levels — and why it matters personally.
-readTime: 8 min
+readTime: 4 min
 tags: [AI Literacy, Nigeria, Africa, Policy, Education]
 ---
 

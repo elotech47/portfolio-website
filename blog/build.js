@@ -67,6 +67,7 @@ function buildPost(filename, template) {
 
   // ── Fill template placeholders ──
   let html = template
+    .replace(/\{\{SLUG\}\}/g,      fm.slug)
     .replace(/\{\{TITLE\}\}/g,     escapeHTML(fm.title))
     .replace(/\{\{EXCERPT\}\}/g,   escapeHTML(fm.excerpt))
     .replace(/\{\{CATEGORY\}\}/g,  fm.category.toLowerCase())

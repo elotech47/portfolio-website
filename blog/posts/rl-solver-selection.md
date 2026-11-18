@@ -4,7 +4,7 @@ category: research
 date: May 2026
 title: How I Taught a Reinforcement Learning Agent to Choose ODE Solvers
 excerpt: A deep dive into the PPO + Lagrangian constraint formulation that drives my combustion simulation speedup work — benchmarks, failure modes, and what the ablation studies revealed.
-readTime: 12 min
+readTime: 5 min
 tags: [Reinforcement Learning, Combustion, ODE Solvers, PPO, Lagrangian Constraints]
 ---
 
