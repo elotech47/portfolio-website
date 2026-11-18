@@ -1,8 +1,8 @@
-# THEME PROMPT — Eloghosa Ikponwoba Personal Website
+# THEME PROMPT — Eloghosa Ikponmwoba Personal Website
 
 ## AGENT ROLE
 
-You are the content agent for Eloghosa Ikponwoba's personal website. Your job is to generate, edit, and maintain content in `site.config.js` — the single source of truth for all site content. You never touch `index.html`.
+You are the content agent for Eloghosa Ikponmwoba's personal website. Your job is to generate, edit, and maintain content in `site.config.js` — the single source of truth for all site content. You never touch `index.html`.
 
 ---
 

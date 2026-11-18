@@ -35,7 +35,7 @@ const SITE_CONFIG = {
     paragraphs: [
       "I'm a PhD candidate (and concurrent Master's student) in Mechanical Engineering at Louisiana State University, specializing in reinforcement learning for adaptive ODE solver selection in combustion simulations — with a minor in Computer Science. My research sits at a rare intersection: making physics solvers smarter using AI decision layers.",
       "Previously, I worked as a Machine Learning Engineer at RIGR AI in Ireland, building AI systems for child protection and law enforcement. I contributed to an INTERPOL technical working group alongside work on dark-web scraping pipelines, semantic search engines, and deep learning models aimed at global public safety.",
-      "My dissertation centers on RL as a decision layer for adaptive modeling in complex physical systems, with peer-reviewed publications spanning combustion science, multi-agent optimization, and biosensor AI. I am a co-inventor on a pending U.S. patent application for deep reinforcement learning applied to oil and gas field development — filed following internship work at Halliburton (not yet granted)."
+      "My dissertation centers on RL as a decision layer for adaptive modeling in complex physical systems, with peer-reviewed publications spanning combustion science, multi-agent optimization, and biosensor AI. I am a co-inventor on a pending U.S. patent application for deep reinforcement learning applied to oil and gas field development, filed following internship work at Halliburton."
     ],
     descriptors: [
       {
@@ -62,7 +62,7 @@ const SITE_CONFIG = {
     {
       id:          "rl-solver",
       index:       "arXiv · 2604.00264",
-      title:       "RL-Based Adaptive ODE Solver Selection for Combustion Simulations",
+      title:       "Autonomous Adaptive Solver Selection for Chemistry Integration via Reinforcement Learning",
       description: "A PPO agent with Lagrangian constraint formulation learns to dynamically switch between CVODE and QSS integrators across 0D/1D chemical kinetics environments — significant speedup with maintained accuracy bounds.",
       tags:        ["Reinforcement Learning", "Combustion", "ODE Solvers", "PPO"],
       link:        "https://arxiv.org/abs/2604.00264",
@@ -156,7 +156,7 @@ const SITE_CONFIG = {
     },
     {
       id:       "llm-training",
-      num:      "007",
+      num:      "006",
       name:     "GPT-2 Scale LLM Training",
       subtitle: "~460M parameter model trained from scratch on 7B tokens — FineWeb-Edu, OWT, Wikipedia, StarCoder",
       link:     null
@@ -177,7 +177,7 @@ const SITE_CONFIG = {
       period:      "May — Aug 2025",
       role:        "Research Intern — GNN + RL Proxy Modeling",
       org:         "Halliburton Energy Services, Houston TX",
-      description: "Designed and implemented a GNN-based RL system for reservoir field development optimization — 23% improvement in spatial decision-making over traditional approaches. Engineered scalable training environment integrating proprietary simulation tools. Co-inventor on a pending U.S. patent application for a novel deep RL approach to oil and gas field development (not yet granted)."
+      description: "Designed and implemented a GNN-based RL system for reservoir field development optimization — 23% improvement in spatial decision-making over traditional approaches. Engineered scalable training environment integrating proprietary simulation tools. Co-inventor on a pending U.S. patent application for a novel deep RL approach to oil and gas field development."
     },
     {
       period:      "2021 — 2026",
@@ -236,10 +236,10 @@ const SITE_CONFIG = {
       published: true,
       featured:  true,
       category:  "research",
-      date:      "May 2025",
+      date:      "May 2026",
       title:     "How I Taught a Reinforcement Learning Agent to Choose ODE Solvers",
       excerpt:   "A deep dive into the PPO + Lagrangian constraint formulation that drives my combustion simulation speedup work — benchmarks, failure modes, and what the ablation studies revealed.",
-      readTime:  "12 min",
+      readTime:  "5 min",
       tags:      ["RL", "Combustion", "ODE", "PPO"]
     },
     {
@@ -247,10 +247,10 @@ const SITE_CONFIG = {
       published: true,
       featured:  true,
       category:  "opinion",
-      date:      "April 2025",
+      date:      "March 2026",
       title:     "Africa Cannot Afford to Be Late to AI — Again",
       excerpt:   "The window for African nations to build foundational AI capacity is narrower than it appears. What needs to happen at the infrastructure, education, and policy levels — and why it matters personally.",
-      readTime:  "8 min",
+      readTime:  "4 min",
       tags:      ["AI Literacy", "Nigeria", "Africa", "Policy"]
     },
     {
