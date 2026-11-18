@@ -153,6 +153,8 @@
   .project-sub { font-size:0.85rem; color:var(--text-muted); margin-top:0.3rem; }
   .project-arrow { font-size:1.5rem; color:var(--text-muted); opacity:0; transform:translateX(-10px); transition:opacity .3s,transform .3s; }
   .project-row:hover .project-arrow { opacity:1; transform:translateX(0); color:var(--gold); }
+  /* Touch devices never hover — show the arrow so linked rows read as links */
+  @media (hover:none){ .project-arrow { opacity:0.5; transform:none; color:var(--gold); } }
 
   /* Experience */
   #experience { border-top:1px solid var(--line); background:var(--bg2); }

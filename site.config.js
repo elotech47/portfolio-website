@@ -44,7 +44,7 @@ const SITE_CONFIG = {
       },
       {
         word:   "Builder",
-        detail: "FoamPilot · AXIS · SciDraft · ScholarSync · Custom solvers · LLMs"
+        detail: "FoamPilot · SciDraft · Turnwise · Custom solvers · LLMs"
       },
       {
         word:   "Storyteller",
@@ -124,42 +124,21 @@ const SITE_CONFIG = {
       num:      "001",
       name:     "FoamPilot",
       subtitle: "Agentic OpenFOAM CFD workflow automation — template-first RAG, 5-agent orchestrator, FastAPI + Docker",
-      link:     null
-    },
-    {
-      id:       "axis",
-      num:      "002",
-      name:     "AXIS",
-      subtitle: "Self-hosted personal AI operating system — Telegram + web UI + CLI, running on local server",
-      link:     null
+      link:     "https://github.com/elotech47/foampilot"
     },
     {
       id:       "scidraft",
-      num:      "003",
+      num:      "002",
       name:     "SciDraft",
-      subtitle: "AI-powered scientific writing platform — end-to-end LLM pipeline for literature discovery, RAG, and citation management",
-      link:     null
+      subtitle: "Scientific writing platform for researchers — AI-assisted drafting, literature discovery, and citation management",
+      link:     "https://scidraft.com"
     },
     {
-      id:       "scholarsync",
-      num:      "004",
-      name:     "ScholarSync",
-      subtitle: "LLM-enabled PDF document intelligence — conversational Q&A, semantic chunking, and interactive research exploration",
-      link:     null
-    },
-    {
-      id:       "marginalia",
-      num:      "005",
-      name:     "Marginalia",
-      subtitle: "Chrome extension for research annotation — FastAPI + Supabase backend, semantic search",
-      link:     null
-    },
-    {
-      id:       "llm-training",
-      num:      "006",
-      name:     "GPT-2 Scale LLM Training",
-      subtitle: "~460M parameter model trained from scratch on 7B tokens — FineWeb-Edu, OWT, Wikipedia, StarCoder",
-      link:     null
+      id:       "turnwise",
+      num:      "003",
+      name:     "Turnwise",
+      subtitle: "Local-first audio transcription for qualitative research — speaker diarization and AI-assisted coding, on-device",
+      link:     "https://getturnwise.com"
     },
   ],
 
@@ -180,7 +159,7 @@ const SITE_CONFIG = {
       description: "Designed and implemented a GNN-based RL system for reservoir field development optimization — 23% improvement in spatial decision-making over traditional approaches. Engineered scalable training environment integrating proprietary simulation tools. Co-inventor on a pending U.S. patent application for a novel deep RL approach to oil and gas field development."
     },
     {
-      period:      "2021 — 2026",
+      period:      "Jun 2021 — Aug 2022",
       role:        "Machine Learning Engineer",
       org:         "RIGR AI, Cork, Ireland (Remote)",
       description: "AI systems for child protection and law enforcement. Contributed via the INTERPOL technical working group. Built AI-based adaptive scrapers for dark web forums (ARICA project), enterprise semantic search using Vespa AI, GPU-accelerated summarization on AWS/Azure, and deep learning models for child sexual exploitation detection."
