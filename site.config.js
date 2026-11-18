@@ -44,13 +44,21 @@ const SITE_CONFIG = {
       },
       {
         word:   "Builder",
-        detail: "FoamPilot · SciDraft · Turnwise · Custom solvers · LLMs"
+        detail: "FoamPilot · SciDraft · Turnwise · GPT-2 training · Custom solvers · LLMs"
       },
       {
         word:   "Storyteller",
         detail: "Sci-fi writer · AI literacy advocate · INTERPOL technical working group · Global"
       }
-    ]
+    ],
+
+    // Optional figure closing the About section. Set to null to remove it.
+    figure: {
+      src:     "assets/flame-contours-rl-vs-seulex.jpg",
+      alt:     "Temperature and OH mass fraction fields at 750, 1100 and 1500 microseconds, with the SEULEX reference solver beside the learned RL policy",
+      label:   "LES Spray A · CB11a",
+      caption: "Temperature and OH fields at three instants through the injection. Reference integrator on the left, the learned policy on the right."
+    }
   },
 
   // ─────────────────────────────────────────
@@ -58,6 +66,15 @@ const SITE_CONFIG = {
   //  Optional blog deep-dive: set blogSlug only when blog/html/<slug>.html exists
   //  (after `node build.js`). Omit or use null to hide "Read deep-dive" on the card.
   // ─────────────────────────────────────────
+  // Featured animation at the top of the research section.
+  // Set to null to remove it.
+  researchFeature: {
+    video:   "assets/solver-selection-les.mp4",
+    poster:  "assets/solver-selection-poster.jpg",
+    label:   "LES Spray A · RL solver selection (CB11a)",
+    caption: "The policy picking an integrator for every chemistry cell, live, through an injection. Green is QSS, purple the learned surrogate; the lower right panel tracks whole-simulation speed-up against a fixed SEULEX baseline."
+  },
+
   research: [
     {
       id:          "rl-solver",
@@ -139,6 +156,13 @@ const SITE_CONFIG = {
       name:     "Turnwise",
       subtitle: "Local-first audio transcription for qualitative research — speaker diarization and AI-assisted coding, on-device",
       link:     "https://getturnwise.com"
+    },
+    {
+      id:       "llm-training",
+      num:      "004",
+      name:     "GPT-2 Scale LLM Training",
+      subtitle: "~460M parameter model trained from scratch on 7B tokens — FineWeb-Edu, OWT, Wikipedia, StarCoder",
+      link:     null
     },
   ],
 

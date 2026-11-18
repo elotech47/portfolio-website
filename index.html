@@ -126,7 +126,21 @@
   .descriptor-detail { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em; color:var(--text-muted); text-transform:uppercase; line-height:1.8; }
 
   /* Research */
+  /* Figures and media */
+  .figure { margin:4rem 0 0; }
+  .figure img, .figure video { display:block; width:100%; height:auto; border:1px solid var(--line2); background:var(--bg3); }
+  .figure a { display:block; cursor:none; }
+  .figure a:hover img { border-color:rgba(201,168,76,0.35); }
+  .figure-meta { display:flex; flex-wrap:wrap; gap:0.6rem 1.5rem; align-items:baseline; margin-top:1rem; }
+  .figure-label { font-family:var(--mono); font-size:0.65rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); white-space:nowrap; }
+  .figure-caption { font-size:0.85rem; line-height:1.7; color:var(--text-muted); max-width:62ch; }
+  .figure-video { position:relative; }
+  .figure-video video { cursor:none; }
+  /* Tall figures read as a plate, not a takeover */
+  .figure-portrait { max-width:820px; }
+
   #research { border-top:1px solid var(--line); background:var(--bg2); }
+  .research-feature { margin:0 0 4rem; }
   .research-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
   .research-card { background:var(--bg3); padding:2.5rem; border:1px solid var(--line); position:relative; overflow:hidden; transition:border-color .3s,background .3s; cursor:none; }
   .research-card:hover { border-color:rgba(201,168,76,0.25); background:rgba(201,168,76,0.03); }
@@ -291,6 +305,7 @@
 
 <section id="research">
   <div class="section-label" id="research-label"></div>
+  <div class="research-feature" id="research-feature"></div>
   <div class="research-grid" id="research-grid"></div>
 </section>
 
@@ -379,16 +394,41 @@ const descriptorsHTML = C.about.descriptors.map(d => `
   </div>
 `).join('');
 
+const aboutFigure = C.about.figure;
+const aboutFigureHTML = aboutFigure ? `
+  <figure class="figure figure-portrait reveal">
+    <a href="${aboutFigure.src}" target="_blank" rel="noopener noreferrer">
+      <img src="${aboutFigure.src}" alt="${aboutFigure.alt}" loading="lazy" decoding="async">
+    </a>
+    <figcaption class="figure-meta">
+      <span class="figure-label">${aboutFigure.label}</span>
+      <span class="figure-caption">${aboutFigure.caption}</span>
+    </figcaption>
+  </figure>` : '';
+
 $('about-content').innerHTML = `
   <div class="about-grid">
     <div class="about-left reveal"><h2>${headlineHTML}</h2></div>
     <div class="about-right reveal">${paragraphsHTML}</div>
   </div>
   <div class="descriptors reveal">${descriptorsHTML}</div>
+  ${aboutFigureHTML}
 `;
 
 // ── RESEARCH ──
 $('research-label').innerHTML = `02 &mdash; Research`;
+
+const feature = C.researchFeature;
+$('research-feature').innerHTML = feature ? `
+  <figure class="figure figure-video reveal" style="margin-top:0">
+    <video id="feature-video" poster="${feature.poster}" muted loop playsinline preload="none" controls aria-label="${feature.caption}">
+      <source src="${feature.video}" type="video/mp4">
+    </video>
+    <figcaption class="figure-meta">
+      <span class="figure-label">${feature.label}</span>
+      <span class="figure-caption">${feature.caption}</span>
+    </figcaption>
+  </figure>` : '';
 $('research-grid').innerHTML = C.research.map(r => {
   const paper = r.link
     ? `<a href="${r.link}" target="_blank" rel="noopener noreferrer" class="card-read">View paper &rarr;</a>`
@@ -569,6 +609,28 @@ if (!('IntersectionObserver' in window) || prefersReducedMotion) {
 
   // Observe after render (elements injected by JS)
   setTimeout(()=>{ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el)); },50);
+}
+
+// ═══════════════════════════════════════════
+//  FEATURE VIDEO
+// ═══════════════════════════════════════════
+// Plays when scrolled into view, but only where autoplay is welcome: not when
+// the visitor asked for less motion, and not on a metered connection. The
+// controls stay available either way, and preload is left at "none" until we
+// know we're going to play it.
+const featureVideo = $('feature-video');
+if (featureVideo) {
+  const saveData = navigator.connection && navigator.connection.saveData;
+  if (!prefersReducedMotion && !saveData && 'IntersectionObserver' in window) {
+    featureVideo.preload = 'metadata';
+    const videoObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) featureVideo.play().catch(() => {});
+        else featureVideo.pause();
+      });
+    }, {threshold:0.35});
+    videoObserver.observe(featureVideo);
+  }
 }
 </script>
 
