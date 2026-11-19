@@ -52,6 +52,12 @@ const SITE_CONFIG = {
       }
     ],
 
+    // Optional portrait in the About section. Set to null to remove it.
+    portrait: {
+      src: "assets/eloghosa-ikponmwoba.jpg",
+      alt: "Portrait of Eloghosa Ikponmwoba"
+    },
+
     // Optional figure closing the About section. Set to null to remove it.
     figure: {
       src:     "assets/flame-contours-rl-vs-seulex.jpg",
