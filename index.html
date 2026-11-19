@@ -115,6 +115,8 @@
   .about-left h2 { font-family:var(--serif); font-size:clamp(2.5rem,4vw,4rem); font-weight:300; line-height:1.1; margin-bottom:2rem; }
   .about-left h2 em { font-style:italic; color:var(--gold); }
   .about-right p { font-size:1rem; color:var(--text-dim); margin-bottom:1.5rem; line-height:1.9; }
+  .about-portrait { margin-top:3rem; max-width:340px; }
+  .about-portrait img { display:block; width:100%; height:auto; border:1px solid var(--line2); }
 
   /* Descriptors */
   .descriptors { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; margin-top:5rem; border:1px solid var(--line2); }
@@ -394,6 +396,12 @@ const descriptorsHTML = C.about.descriptors.map(d => `
   </div>
 `).join('');
 
+const portrait = C.about.portrait;
+const portraitHTML = portrait ? `
+  <div class="about-portrait">
+    <img src="${portrait.src}" alt="${portrait.alt}" width="680" height="680" loading="lazy" decoding="async">
+  </div>` : '';
+
 const aboutFigure = C.about.figure;
 const aboutFigureHTML = aboutFigure ? `
   <figure class="figure figure-portrait reveal">
@@ -408,7 +416,10 @@ const aboutFigureHTML = aboutFigure ? `
 
 $('about-content').innerHTML = `
   <div class="about-grid">
-    <div class="about-left reveal"><h2>${headlineHTML}</h2></div>
+    <div class="about-left reveal">
+      <h2>${headlineHTML}</h2>
+      ${portraitHTML}
+    </div>
     <div class="about-right reveal">${paragraphsHTML}</div>
   </div>
   <div class="descriptors reveal">${descriptorsHTML}</div>
