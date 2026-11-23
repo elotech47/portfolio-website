@@ -66,15 +66,19 @@ function buildPost(filename, template) {
     .join('');
 
   // ── Fill template placeholders ──
+  // NOTE: the replacements are passed as FUNCTIONS, not strings. A plain string
+  // replacement treats $$, $&, $`, $' and $1..$9 as capture-group syntax, which
+  // silently corrupts any post containing LaTeX ($$...$$) or JS with those
+  // character pairs. Returning the value from a function disables that parsing.
   let html = template
-    .replace(/\{\{SLUG\}\}/g,      fm.slug)
-    .replace(/\{\{TITLE\}\}/g,     escapeHTML(fm.title))
-    .replace(/\{\{EXCERPT\}\}/g,   escapeHTML(fm.excerpt))
-    .replace(/\{\{CATEGORY\}\}/g,  fm.category.toLowerCase())
-    .replace(/\{\{DATE\}\}/g,      fm.date)
-    .replace(/\{\{READ_TIME\}\}/g, fm.readTime)
-    .replace(/\{\{TAGS\}\}/g,      tagsHTML)
-    .replace(/\{\{CONTENT\}\}/g,   htmlContent);
+    .replace(/\{\{SLUG\}\}/g,      () => fm.slug)
+    .replace(/\{\{TITLE\}\}/g,     () => escapeHTML(fm.title))
+    .replace(/\{\{EXCERPT\}\}/g,   () => escapeHTML(fm.excerpt))
+    .replace(/\{\{CATEGORY\}\}/g,  () => fm.category.toLowerCase())
+    .replace(/\{\{DATE\}\}/g,      () => fm.date)
+    .replace(/\{\{READ_TIME\}\}/g, () => fm.readTime)
+    .replace(/\{\{TAGS\}\}/g,      () => tagsHTML)
+    .replace(/\{\{CONTENT\}\}/g,   () => htmlContent);
 
   // ── Write output ──
   const outFile = path.join(OUTPUT_DIR, `${fm.slug}.html`);
