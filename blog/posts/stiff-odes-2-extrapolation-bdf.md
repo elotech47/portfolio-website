@@ -1,0 +1,479 @@
+---
+slug: stiff-odes-2-extrapolation-bdf
+category: research
+date: November 2026
+title: How Real Solvers Take Big Steps
+excerpt: Part 2 of 3. What order of accuracy actually buys you, Richardson extrapolation and the tableau that turns a bad method into a good one, and BDF derived from scratch — with interactive stability regions for orders one through six, and why nobody goes past six.
+readTime: 26 min
+tags: [Numerical Methods, BDF, Extrapolation, Multistep, Stiff ODEs, Interactive]
+---
+
+<script>var D=String.fromCharCode(36);window.MathJax={tex:{inlineMath:[[D,D]],displayMath:[['\\[','\\]']],processEscapes:false},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+
+<style>
+.viz{border:1px solid var(--line2);background:var(--bg2);padding:1.6rem;margin:3rem 0}
+.viz-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem}
+.viz-ctrl{display:flex;align-items:center;gap:1rem;margin:.75rem 0;font-family:var(--mono);font-size:.68rem;color:var(--text-muted);letter-spacing:.06em}
+.viz-ctrl input[type=range]{flex:1;accent-color:#c9a84c;height:2px;min-width:70px}
+.viz-val{min-width:5.2rem;text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+.viz-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:.7rem;margin-top:1.3rem}
+.viz-stat{border:1px solid var(--line);padding:.7rem .8rem;background:var(--bg3)}
+.viz-stat-l{font-family:var(--mono);font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);line-height:1.5}
+.viz-stat-v{font-family:var(--mono);font-size:1rem;color:var(--text);margin-top:.3rem;font-variant-numeric:tabular-nums}
+.viz-seg{display:flex;border:1px solid var(--line2);width:fit-content;margin-bottom:1.1rem;flex-wrap:wrap}
+.viz-seg button{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.5rem .95rem;background:none;border:none;border-right:1px solid var(--line2);color:var(--text-muted);cursor:pointer;transition:background .2s,color .2s}
+.viz-seg button:last-child{border-right:none}
+.viz-seg button:hover{color:var(--text)}
+.viz-seg button.on{background:var(--gold-glow);color:var(--gold)}
+.viz-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;padding:.5rem 1rem;background:none;border:1px solid var(--line2);color:var(--text-dim);cursor:pointer;transition:border-color .2s,color .2s;margin-right:.5rem}
+.viz-btn:hover{border-color:var(--gold);color:var(--gold)}
+.viz-note{font-family:var(--mono);font-size:.64rem;color:var(--text-muted);margin-top:1rem;line-height:1.75;letter-spacing:.02em}
+.viz-legend{display:flex;flex-wrap:wrap;gap:1.2rem;font-family:var(--mono);font-size:.6rem;color:var(--text-muted);margin-bottom:.9rem;letter-spacing:.06em}
+.viz-legend i{display:flex;align-items:center;gap:.45rem;font-style:normal}
+.viz-sw{width:18px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block}
+.viz svg{display:block;width:100%;height:auto;margin:0;border:none}
+.viz canvas{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.mathd{margin:2.2rem 0;overflow-x:auto;overflow-y:hidden;color:var(--text);font-family:var(--mono);font-size:.9rem}
+mjx-container{color:var(--text)}
+mjx-container svg{max-width:100%}
+mjx-container[display='true']{margin:0!important}
+.post-content table{width:100%;border-collapse:collapse;margin:2.5rem 0;font-size:.93rem}
+.post-content th{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-align:left;padding:.7rem .8rem;border-bottom:1px solid var(--line2);font-weight:400}
+.post-content td{padding:.7rem .8rem;border-bottom:1px solid var(--line);color:var(--text-dim);vertical-align:top}
+.post-content td code{font-size:.8em}
+.series-nav{border:1px solid var(--line2);background:var(--bg2);padding:1.3rem 1.6rem;margin:2.5rem 0;font-family:var(--mono);font-size:.68rem;line-height:2;color:var(--text-muted);letter-spacing:.04em}
+.series-nav b{color:var(--gold);font-weight:400}
+.series-nav em{color:var(--text-dim);font-style:italic}
+</style>
+
+<div class="series-nav">A three-part series on stiff ODE integration.<br>Part 1 &mdash; <a href="/blog/html/stiff-odes-1-explicit-implicit.html">Why your ODE solver blows up.</a> Explicit vs implicit, stability, the Newton solve.<br><b>Part 2 &mdash; How real solvers take big steps.</b> Order, extrapolation, BDF. <em>You are here.</em><br>Part 3 &mdash; <a href="/blog/html/stiff-odes-3-fast-bdf.html">Making BDF fast.</a> Sparse Jacobians, Krylov, analytic derivatives.</div>
+
+Part 1 ended with implicit Euler looking like a hero: unconditionally stable, immune to stiffness, able to step straight over dead modes without flinching. There is one problem with it, and it is serious enough that no production code uses it as its main workhorse.
+
+It is first-order accurate. Halve the step, halve the error. That sounds reasonable until you want three more digits, which costs a thousand times the work.
+
+This post is about the two ways out of that, and about the family of methods &mdash; **BDF** &mdash; that essentially every stiff solver you have ever called is built from. CVODE, LSODA, DASSL, `ode15s`, the chemistry integrator inside your CFD code: all BDF, or BDF with extras.
+
+## What "order" actually means
+
+Two different errors, and people mix them up constantly.
+
+The **local truncation error** is the mistake a single step makes, assuming it starts from the exact answer. For explicit Euler, Taylor tells you immediately:
+
+<div class="mathd">
+\[ y(t_{n}+\Delta t) = y(t_n) + \Delta t\, y'(t_n) + \tfrac{1}{2}\Delta t^2 y''(\xi) \quad\Longrightarrow\quad \text{local error} = O(\Delta t^2) \]
+</div>
+
+The **global error** is what you actually care about: how wrong you are at the end, after taking $T/\Delta t$ steps. Each step contributes $O(\Delta t^2)$ and there are $O(1/\Delta t)$ of them, so the errors accumulate to $O(\Delta t)$. You lose exactly one power. A method is called **order $p$** when its global error is $O(\Delta t^p)$, which means its local error is $O(\Delta t^{p+1})$.
+
+Order is an exponent, and exponents are brutal in both directions. Look at what it costs to reach a given accuracy.
+
+<div class="viz"><div class="viz-title">Interactive 5 &mdash; What order buys you</div><div class="viz-legend"><i><span class="viz-sw" style="border-top-color:#c4956a"></span>order 1 &mdash; Euler</i><i><span class="viz-sw" style="border-top-color:#b09fd6"></span>order 2 &mdash; trapezoid</i><i><span class="viz-sw" style="border-top-color:#82c9a0"></span>order 4 &mdash; classical RK4</i><i><span class="viz-sw" style="border-top-color:rgba(201,168,76,0.85);border-top-style:dashed"></span>your tolerance</i></div><svg viewBox="0 0 680 330" role="img"><title>Global error against step size on logarithmic axes</title><desc>Log-log plot of global error versus step size for first, second and fourth order methods, showing straight lines whose slopes equal the order.</desc><g id="w5grid"></g><path id="w5p1" d="" fill="none" stroke="#c4956a" stroke-width="1.8"/><path id="w5p2" d="" fill="none" stroke="#b09fd6" stroke-width="1.8"/><path id="w5p4" d="" fill="none" stroke="#82c9a0" stroke-width="1.8"/><line id="w5tolline" x1="0" y1="0" x2="0" y2="0" stroke="rgba(201,168,76,0.85)" stroke-width="1.3" stroke-dasharray="5 4"/><g id="w5marks"></g></svg><div class="viz-ctrl"><label for="w5tol">tolerance</label><input type="range" id="w5tol" min="0" max="100" step="1" value="55"><span class="viz-val" id="w5tolv">1.0e-6</span></div><div class="viz-stats"><div class="viz-stat"><div class="viz-stat-l">Order 1 &mdash; steps needed</div><div class="viz-stat-v" id="w5n1" style="color:#c4956a;font-size:.9rem">1,000,000</div></div><div class="viz-stat"><div class="viz-stat-l">Order 2 &mdash; steps needed</div><div class="viz-stat-v" id="w5n2" style="color:#b09fd6;font-size:.9rem">1,000</div></div><div class="viz-stat"><div class="viz-stat-l">Order 4 &mdash; steps needed</div><div class="viz-stat-v" id="w5n4" style="color:#82c9a0;font-size:.9rem">32</div></div><div class="viz-stat"><div class="viz-stat-l">Order 1 vs order 4</div><div class="viz-stat-v" id="w5ratio" style="font-size:.9rem">31,623&times;</div></div></div><div class="viz-note">On log-log axes a method of order p is a straight line of slope p. Drag the tolerance down and watch the gap open: at engineering accuracy the orders are within a factor of a hundred of each other, but every digit you demand multiplies the first-order method's cost by ten and the fourth-order method's by only 1.8. High order is not a luxury &mdash; it is the only thing that makes tight tolerances affordable.</div></div>
+
+<script>
+(function(){
+var X0=-5, X1=0, Y0=-14, Y1=1;
+function px(lx){ return 64+(lx-X0)/(X1-X0)*568; }
+function py(ly){ return 38+(Y1-ly)/(Y1-Y0)*242; }
+var C={1:1.0,2:0.35,4:0.06};
+function curve(p){
+  var d=[];
+  for(var i=0;i<=120;i++){
+    var lx=X0+(X1-X0)*i/120, le=Math.log(C[p])/Math.LN10+p*lx;
+    if(le<Y0-0.4) continue;
+    d.push(px(lx).toFixed(1)+' '+py(Math.min(le,Y1)).toFixed(1));
+  }
+  return d.length?'M'+d.join(' L'):'';
+}
+var g='';
+for(var gx=X0;gx<=X1;gx++){
+  g+='<line x1="'+px(gx).toFixed(1)+'" y1="38" x2="'+px(gx).toFixed(1)+'" y2="280" stroke="rgba(232,228,220,0.07)" stroke-width="1"/>';
+  g+='<text x="'+px(gx).toFixed(1)+'" y="298" text-anchor="middle" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.4)">1e'+gx+'</text>';
+}
+for(var gy=Y0;gy<=Y1;gy+=3){
+  g+='<line x1="64" y1="'+py(gy).toFixed(1)+'" x2="632" y2="'+py(gy).toFixed(1)+'" stroke="rgba(232,228,220,0.07)" stroke-width="1"/>';
+  g+='<text x="56" y="'+(py(gy)+3.5).toFixed(1)+'" text-anchor="end" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.4)">1e'+gy+'</text>';
+}
+g+='<text x="348" y="320" text-anchor="middle" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.45)">step size</text>';
+g+='<text x="64" y="26" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.45)">global error at t = 1</text>';
+document.getElementById('w5grid').innerHTML=g;
+document.getElementById('w5p1').setAttribute('d',curve(1));
+document.getElementById('w5p2').setAttribute('d',curve(2));
+document.getElementById('w5p4').setAttribute('d',curve(4));
+function upd(){
+  var u=+document.getElementById('w5tol').value/100, lt=-1-u*11;
+  document.getElementById('w5tolv').textContent=Math.pow(10,lt).toExponential(1);
+  var yy=py(lt);
+  var L=document.getElementById('w5tolline');
+  L.setAttribute('x1',64); L.setAttribute('x2',632); L.setAttribute('y1',yy.toFixed(1)); L.setAttribute('y2',yy.toFixed(1));
+  var m='', ns={};
+  [[1,'#c4956a'],[2,'#b09fd6'],[4,'#82c9a0']].forEach(function(pc){
+    var p=pc[0], lx=(lt-Math.log(C[p])/Math.LN10)/p;
+    ns[p]=Math.ceil(1/Math.pow(10,lx));
+    if(lx>=X0&&lx<=X1){ m+='<circle cx="'+px(lx).toFixed(1)+'" cy="'+yy.toFixed(1)+'" r="4.5" fill="'+pc[1]+'"/>'; }
+  });
+  document.getElementById('w5marks').innerHTML=m;
+  function f(n){ return n>1e9?n.toExponential(1):n.toLocaleString(); }
+  document.getElementById('w5n1').textContent=f(ns[1]);
+  document.getElementById('w5n2').textContent=f(ns[2]);
+  document.getElementById('w5n4').textContent=f(ns[4]);
+  document.getElementById('w5ratio').textContent=f(Math.round(ns[1]/ns[4]))+'×';
+}
+document.getElementById('w5tol').addEventListener('input',upd);
+upd();
+})();
+</script>
+
+So we want high order *and* the stability properties from Part 1. There are exactly two strategies for getting there, and they are genuinely different ideas.
+
+**Strategy A: take one clever step.** Evaluate the right-hand side at several points inside the interval and combine them so that the low-order error terms cancel. This is Runge&ndash;Kutta. Or: take the *same* bad method several times at different step sizes and combine the answers so the error terms cancel. That is extrapolation, and it is next.
+
+**Strategy B: remember where you have been.** You have already computed $f$ at previous steps and thrown that information away. Reuse it. This is the multistep family, and BDF lives here.
+
+## Strategy A: extrapolation, or how to be smarter than your method
+
+Here is an idea that feels like cheating the first time you see it.
+
+Suppose you have a method of order $p$. Run it across some interval with step $h$ and call the answer $A(h)$. Being order $p$ means the error has a clean leading term:
+
+<div class="mathd">
+\[ A(h) = A^{*} + c\,h^{p} + O(h^{p+1}) \]
+</div>
+
+where $A^{*}$ is the true answer and $c$ is some constant you do not know. Now run the *same method* across the *same interval* with half the step:
+
+<div class="mathd">
+\[ A(h/2) = A^{*} + c\,\frac{h^{p}}{2^{p}} + O(h^{p+1}) \]
+</div>
+
+Two equations, two unknowns &mdash; and you do not care about $c$, so eliminate it. Multiply the second by $2^p$, subtract the first, divide by $2^p - 1$:
+
+<div class="mathd">
+\[ \frac{2^{p} A(h/2) - A(h)}{2^{p} - 1} = A^{*} + O(h^{p+1}) \]
+</div>
+
+The leading error term is **gone**. You just turned an order-$p$ method into an order-$(p{+}1)$ method using nothing but two runs of the method you already had. This is **Richardson extrapolation**, and the same trick is behind Romberg integration, Aitken's delta-squared, and most of the step-size controllers in existence.
+
+And there is no reason to stop at one. Run the method with a whole sequence of step sizes, and extrapolate repeatedly &mdash; each new column of the tableau kills one more error term:
+
+<div class="mathd">
+\[ T_{i,j} = T_{i,j-1} + \frac{T_{i,j-1} - T_{i-1,j-1}}{(n_i / n_{i-j+1})^{p} - 1} \]
+</div>
+
+The first column is just the raw method at increasingly fine steps. The entry at the bottom right is the one you keep. Watch the whole tableau at once.
+
+<div class="viz"><div class="viz-title">Interactive 6 &mdash; The extrapolation tableau</div><div class="viz-note" style="margin-top:0;margin-bottom:1rem">Explicit Euler, first order, integrating across one macro-step. Column 1 is the raw method with 1, 2, 4, 8, 16, 32 substeps. Every column to the right is pure arithmetic on the column before it &mdash; no extra function evaluations at all.</div><div id="w6grid" style="font-family:var(--mono);font-size:.62rem;overflow-x:auto"></div><div class="viz-ctrl"><label for="w6h">macro-step H</label><input type="range" id="w6h" min="10" max="200" step="1" value="100"><span class="viz-val" id="w6hv">1.00</span></div><div class="viz-stats"><div class="viz-stat"><div class="viz-stat-l">Best raw Euler (32 substeps)</div><div class="viz-stat-v" id="w6raw" style="font-size:.9rem">1.0e-2</div></div><div class="viz-stat"><div class="viz-stat-l">Best extrapolated entry</div><div class="viz-stat-v" id="w6ext" style="font-size:.9rem;color:#82c9a0">1.0e-9</div></div><div class="viz-stat"><div class="viz-stat-l">Column that won</div><div class="viz-stat-v" id="w6col" style="font-size:.9rem">6</div></div><div class="viz-stat"><div class="viz-stat-l">Accuracy gained</div><div class="viz-stat-v" id="w6gain" style="font-size:.9rem">7 digits</div></div></div><div class="viz-note">Read down column one: halving the step buys you one bit at a time, exactly as first order promises. Now read along any row. Each step to the right costs two subtractions and a divide, and gains an entire order of accuracy. This is the cheapest accuracy in all of numerical analysis. But watch the far right of the bottom row as you push the macro-step up &mdash; past about H = 0.6 the last column stops helping and starts getting worse. Keep the macro-step small and the whole row marches down cleanly.</div></div>
+
+<script>
+(function(){
+var NS=[1,2,4,8,16,32], P=1;
+function euler(H,n){ var y=1,h=H/n; for(var i=0;i<n;i++) y+=h*(-y); return y; }
+function build(){
+  var H=+document.getElementById('w6h').value/100;
+  document.getElementById('w6hv').textContent=H.toFixed(2);
+  var ex=Math.exp(-H), T=[];
+  for(var i=0;i<NS.length;i++){
+    T[i]=[]; T[i][0]=euler(H,NS[i]);
+    for(var j=1;j<=i;j++){
+      var r=Math.pow(NS[i]/NS[i-j],P);
+      T[i][j]=T[i][j-1]+(T[i][j-1]-T[i-1][j-1])/(r-1);
+    }
+  }
+  var html='<div style="display:grid;grid-template-columns:auto repeat(6,minmax(78px,1fr));gap:3px;min-width:560px">';
+  html+='<div style="padding:.45rem .3rem;color:rgba(232,228,220,0.4)">substeps</div>';
+  for(var c=0;c<6;c++) html+='<div style="padding:.45rem .3rem;text-align:center;color:#c9a84c;letter-spacing:.1em">col '+(c+1)+'</div>';
+  for(var i2=0;i2<6;i2++){
+    html+='<div style="padding:.5rem .3rem;color:rgba(232,228,220,0.45)">n = '+NS[i2]+'</div>';
+    for(var j2=0;j2<6;j2++){
+      if(j2>i2){ html+='<div></div>'; continue; }
+      var err=Math.abs(T[i2][j2]-ex);
+      var lg=err<1e-16?16:Math.min(16,-Math.log(err)/Math.LN10);
+      var a=Math.max(0.06,Math.min(0.5,lg/16*0.5));
+      var col=j2===0?'196,149,106':'130,201,160';
+      html+='<div style="padding:.5rem .3rem;text-align:center;background:rgba('+col+','+a.toFixed(3)+');border:1px solid rgba(255,255,255,0.05);color:var(--text)">'+(err<1e-16?'~0':err.toExponential(1))+'</div>';
+    }
+  }
+  html+='</div>';
+  document.getElementById('w6grid').innerHTML=html;
+  var raw=Math.abs(T[5][0]-ex), best=Infinity, bestc=0;
+  for(var c2=0;c2<6;c2++){ var e2=Math.abs(T[5][c2]-ex); if(e2<best){ best=e2; bestc=c2+1; } }
+  document.getElementById('w6raw').textContent=raw.toExponential(1);
+  document.getElementById('w6ext').textContent=best<1e-16?'~0':best.toExponential(1);
+  document.getElementById('w6col').textContent=String(bestc);
+  var dg=Math.round(Math.log(raw/Math.max(best,1e-16))/Math.LN10);
+  document.getElementById('w6gain').textContent=dg+' digits';
+}
+document.getElementById('w6h').addEventListener('input',build);
+build();
+})();
+</script>
+
+Two refinements turn this into a real solver. First, if you build the tableau on a **symmetric** base method &mdash; the explicit midpoint rule, say &mdash; its error expansion contains only even powers of $h$, so every column gains *two* orders instead of one. That is the Gragg&ndash;Bulirsch&ndash;Stoer method, and it is spectacular on smooth non-stiff problems. Second, the tableau gives you an error estimate for free: the difference between neighbouring diagonal entries tells you how much the last extrapolation changed anything, so the code can decide on the fly how many columns to build and how big the next macro-step should be. Adaptive order and adaptive step size fall out of the same table.
+
+For stiff problems you cannot use an explicit base method, for all the reasons in Part 1. But the trick does not care what the base method is. Apply extrapolation to **linearly implicit Euler** &mdash; one Newton-style linear solve per substep, no inner iteration &mdash; and you get a stiff solver of arbitrary order with a built-in error estimate. That is SEULEX, and its cousin SODEX uses the linearly implicit midpoint rule. If you have ever used a reference integrator to generate ground truth for a stiff chemistry benchmark, there is a good chance it was one of these; their accuracy at tight tolerances is hard to beat.
+
+So why is almost nothing in production built on extrapolation? Because the tableau is expensive. To reach order eight you integrate the same interval with 1, 2, 3, 4, 5, 6, 7 and 8 substeps &mdash; a lot of linear solves for one macro-step &mdash; and for stiff problems a linear solve means a Jacobian factorisation. Extrapolation wins when you want extreme accuracy and the right-hand side is cheap. For the tolerances engineering actually runs at, the other strategy wins, and that is what the rest of this post is about.
+
+That turn-up at the end of the row is not a bug, and it is worth understanding, because it is the reason extrapolation codes are written the way they are. The whole derivation assumed the error behaves like $c\,h^{p}$ plus negligible higher terms. When the macro-step is large that assumption is simply false &mdash; the neglected terms are not negligible &mdash; and each extrapolation amplifies whatever does not fit the model. Eventually the amplification beats the cancellation and the column turns around. Shrink the macro-step and the assumption becomes true again, and the entire row marches down to round-off.
+
+So a real extrapolation solver never just takes the deepest column. It builds the tableau row by row, watches the differences between neighbouring entries, and stops when they stop shrinking &mdash; adopting whichever order was winning. **Adaptive order is not a feature bolted onto extrapolation; it is forced on you by the mathematics.** Hold that thought, because BDF codes end up doing exactly the same thing for exactly the same reason.
+
+## Strategy B: remember where you have been
+
+Every method so far throws away everything it knows the moment a step finishes. That is wasteful. After a hundred steps you have a hundred past values of the solution and a hundred past evaluations of $f$, all of them paid for, all of them sitting in memory.
+
+A **linear multistep method** uses them:
+
+<div class="mathd">
+\[ \sum_{j=0}^{k} \alpha_j\, y_{n+1-j} = \Delta t \sum_{j=0}^{k} \beta_j\, f_{n+1-j} \]
+</div>
+
+Pick the coefficients $\alpha_j$ and $\beta_j$ and you have named a method. The design space splits into two obvious strategies:
+
+- **Fit a polynomial through the past values of $f$** and integrate it across the step. Put weight on many $\beta_j$ terms and keep $\alpha$ trivial. These are the **Adams** methods &mdash; Adams&ndash;Bashforth if you extrapolate the polynomial (explicit), Adams&ndash;Moulton if you include the new point (implicit). Superb for smooth non-stiff problems; their stability regions are small, so they are the wrong tool here.
+- **Fit a polynomial through the past values of $y$**, differentiate it, and demand that the derivative match $f$ at the new point. Put weight on many $\alpha_j$ terms and keep only $\beta_0$. These are the **backward differentiation formulas**, and they have the largest stability regions of any multistep family. This is what we want.
+
+## Deriving BDF in one picture
+
+The whole idea, in one sentence: **the solution is a smooth curve, so fit a polynomial through the points you already have plus the one you want, and insist that this polynomial has the right slope at the new point.**
+
+Concretely. Let $p(t)$ be the unique polynomial of degree $k$ passing through
+
+<div class="mathd">
+\[ (t_{n+1},\, y_{n+1}),\ (t_n,\, y_n),\ (t_{n-1},\, y_{n-1}),\ \dots,\ (t_{n+1-k},\, y_{n+1-k}) \]
+</div>
+
+All but the first of those are known. Now impose the differential equation, but only at the new point:
+
+<div class="mathd">
+\[ p'(t_{n+1}) = f(t_{n+1},\, y_{n+1}) \]
+</div>
+
+That is it. That is the entire definition of BDF-$k$. One equation, one unknown $y_{n+1}$, appearing on both sides &mdash; implicit, exactly as we want. Play with it:
+
+<div class="viz"><div class="viz-title">Interactive 7 &mdash; BDF is a polynomial with the right slope</div><div class="viz-legend"><i><span class="viz-sw" style="border-top-color:rgba(232,228,220,0.4);border-top-style:dashed"></span>true solution</i><i><span class="viz-sw" style="border-top-color:#b09fd6"></span>interpolating polynomial</i><i><span class="viz-sw" style="border-top-color:#82c9a0"></span>slope of the polynomial at t&#8345;&#8330;&#8321;</i><i><span class="viz-sw" style="border-top-color:#c4956a"></span>slope the ODE demands</i></div><svg viewBox="0 0 680 330" role="img"><title>BDF as polynomial interpolation with a slope condition</title><desc>Known history points and a trial new point with a polynomial through them, comparing the polynomial slope at the new point against the slope the differential equation requires.</desc><g id="w7grid"></g><path id="w7ex" d="" fill="none" stroke="rgba(232,228,220,0.4)" stroke-width="1.4" stroke-dasharray="5 4"/><path id="w7poly" d="" fill="none" stroke="#b09fd6" stroke-width="1.8"/><line id="w7sp" x1="0" y1="0" x2="0" y2="0" stroke="#82c9a0" stroke-width="2"/><line id="w7sf" x1="0" y1="0" x2="0" y2="0" stroke="#c4956a" stroke-width="2" stroke-dasharray="5 3"/><g id="w7pts"></g></svg><div class="viz-ctrl"><label for="w7k">order k</label><input type="range" id="w7k" min="1" max="6" step="1" value="3"><span class="viz-val" id="w7kv">BDF3</span></div><div class="viz-ctrl"><label for="w7y">trial y&#8345;&#8330;&#8321;</label><input type="range" id="w7y" min="80" max="600" step="1" value="450"><span class="viz-val" id="w7yv">0.450</span></div><div><button class="viz-btn" id="w7solve">Solve the BDF equation</button></div><div class="viz-stats"><div class="viz-stat"><div class="viz-stat-l">Polynomial slope p&prime;</div><div class="viz-stat-v" id="w7ps" style="font-size:.9rem;color:#82c9a0">&mdash;</div></div><div class="viz-stat"><div class="viz-stat-l">Required slope f = &minus;y</div><div class="viz-stat-v" id="w7fs" style="font-size:.9rem;color:#c4956a">&mdash;</div></div><div class="viz-stat"><div class="viz-stat-l">Residual</div><div class="viz-stat-v" id="w7res" style="font-size:.9rem">&mdash;</div></div><div class="viz-stat"><div class="viz-stat-l">Error vs true solution</div><div class="viz-stat-v" id="w7err" style="font-size:.9rem">&mdash;</div></div></div><div class="viz-note">Drag the trial value and watch the two slope lines scissor against each other. Where they coincide, the BDF equation is satisfied and that is the step the method takes. Then raise the order: more history points pin the polynomial down harder, the curve hugs the true solution further back, and the error at the new point drops by about an order of magnitude per order of k. The implicitness is now visible as a geometric fact &mdash; moving the unknown point changes the polynomial, which changes its own slope, which is why you cannot just read the answer off.</div></div>
+
+<script>
+(function(){
+var T=1.25, h=0.18, X0=-0.02, X1=1.62, Y0=-0.12, Y1=1.28;
+function px(t){ return 56+(t-X0)/(X1-X0)*580; }
+function py(v){ return 40+(Y1-v)/(Y1-Y0)*245; }
+function exact(t){ return Math.exp(-t); }
+var g='';
+g+='<line x1="56" y1="'+py(0).toFixed(1)+'" x2="636" y2="'+py(0).toFixed(1)+'" stroke="rgba(232,228,220,0.22)" stroke-width="1"/>';
+g+='<line x1="56" y1="34" x2="56" y2="292" stroke="rgba(232,228,220,0.22)" stroke-width="1"/>';
+g+='<text x="48" y="'+(py(1)+4).toFixed(1)+'" text-anchor="end" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.4)">1</text>';
+g+='<text x="48" y="'+(py(0)+4).toFixed(1)+'" text-anchor="end" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.4)">0</text>';
+g+='<line x1="'+px(T).toFixed(1)+'" y1="34" x2="'+px(T).toFixed(1)+'" y2="292" stroke="rgba(201,168,76,0.4)" stroke-width="1" stroke-dasharray="3 4"/>';
+g+='<text x="'+px(T).toFixed(1)+'" y="308" text-anchor="middle" style="font-family:var(--mono);font-size:10px;fill:#c9a84c">t&#8345;&#8330;&#8321;</text>';
+g+='<text x="56" y="26" style="font-family:var(--mono);font-size:10px;fill:rgba(232,228,220,0.45)">y</text>';
+document.getElementById('w7grid').innerHTML=g;
+var d=[]; for(var i=0;i<=200;i++){ var t=X0+(X1-X0)*i/200; d.push(px(t).toFixed(1)+' '+py(exact(t)).toFixed(1)); }
+document.getElementById('w7ex').setAttribute('d','M'+d.join(' L'));
+function nodes(k){ var t=[]; for(var i=0;i<=k;i++) t.push(T-i*h); return t; }
+function lagDeriv(t){
+  var k=t.length-1, x=t[0], Lp=[];
+  for(var i=0;i<=k;i++){
+    var s=0;
+    for(var j=0;j<=k;j++){
+      if(j===i) continue;
+      var pr=1/(t[i]-t[j]);
+      for(var m=0;m<=k;m++){ if(m===i||m===j) continue; pr*=(x-t[m])/(t[i]-t[m]); }
+      s+=pr;
+    }
+    Lp.push(s);
+  }
+  return Lp;
+}
+function evalPoly(t,v,x){
+  var s=0;
+  for(var i=0;i<t.length;i++){ var L=1; for(var m=0;m<t.length;m++){ if(m!==i) L*=(x-t[m])/(t[i]-t[m]); } s+=v[i]*L; }
+  return s;
+}
+function draw(){
+  var k=+document.getElementById('w7k').value;
+  var y0=+document.getElementById('w7y').value/1000;
+  document.getElementById('w7kv').textContent='BDF'+k;
+  document.getElementById('w7yv').textContent=y0.toFixed(3);
+  var t=nodes(k), v=[y0];
+  for(var i=1;i<=k;i++) v.push(exact(t[i]));
+  var Lp=lagDeriv(t), ps=0;
+  for(var i2=0;i2<=k;i2++) ps+=Lp[i2]*v[i2];
+  var fs=-y0, res=ps-fs;
+  var pd=[], lo=t[k]-0.06, hi=T+0.30;
+  for(var s2=0;s2<=180;s2++){
+    var x=lo+(hi-lo)*s2/180, val=evalPoly(t,v,x);
+    if(val<Y0-0.1||val>Y1+0.1){ pd.push(null); continue; }
+    pd.push(px(x).toFixed(1)+' '+py(val).toFixed(1));
+  }
+  var segs=[], cur=[];
+  for(var q=0;q<pd.length;q++){ if(pd[q]===null){ if(cur.length>1)segs.push('M'+cur.join(' L')); cur=[]; } else cur.push(pd[q]); }
+  if(cur.length>1) segs.push('M'+cur.join(' L'));
+  document.getElementById('w7poly').setAttribute('d',segs.join(' '));
+  function line(id,slope,col){
+    var L=0.34, el=document.getElementById(id);
+    el.setAttribute('x1',px(T-L).toFixed(1)); el.setAttribute('y1',py(y0-slope*L).toFixed(1));
+    el.setAttribute('x2',px(T+0.26).toFixed(1)); el.setAttribute('y2',py(y0+slope*0.26).toFixed(1));
+  }
+  line('w7sp',ps); line('w7sf',fs);
+  var s3='';
+  for(var i3=1;i3<=k;i3++) s3+='<circle cx="'+px(t[i3]).toFixed(1)+'" cy="'+py(v[i3]).toFixed(1)+'" r="4" fill="#b09fd6"/>';
+  s3+='<circle cx="'+px(T).toFixed(1)+'" cy="'+py(y0).toFixed(1)+'" r="5.5" fill="none" stroke="#c9a84c" stroke-width="2"/>';
+  document.getElementById('w7pts').innerHTML=s3;
+  document.getElementById('w7ps').textContent=ps.toFixed(4);
+  document.getElementById('w7fs').textContent=fs.toFixed(4);
+  var r=document.getElementById('w7res');
+  r.textContent=(Math.abs(res)<5e-4?'0 — solved':res.toFixed(4));
+  r.style.color=Math.abs(res)<5e-4?'#82c9a0':'var(--text)';
+  document.getElementById('w7err').textContent=Math.abs(y0-exact(T)).toExponential(1);
+}
+document.getElementById('w7solve').addEventListener('click',function(){
+  var k=+document.getElementById('w7k').value, t=nodes(k), Lp=lagDeriv(t), num=0;
+  for(var i=1;i<=k;i++) num+=Lp[i]*exact(t[i]);
+  var sol=-num/(Lp[0]+1);
+  document.getElementById('w7y').value=String(Math.round(sol*1000));
+  draw();
+});
+document.getElementById('w7k').addEventListener('input',draw);
+document.getElementById('w7y').addEventListener('input',draw);
+draw();
+})();
+</script>
+
+Write out that condition with evenly spaced points and it collapses into the standard multistep shape, with all the weight on the $\alpha$ side and a single $\beta_0$:
+
+<div class="mathd">
+\[ \sum_{j=0}^{k} \alpha_j\, y_{n+1-j} = \Delta t\, \beta_0\, f(t_{n+1},\, y_{n+1}) \]
+</div>
+
+Differentiating the Lagrange basis at the new node and normalising $\alpha_0 = 1$ gives the coefficients. You do not have to memorise these, but it is worth seeing that they are not magic &mdash; every number below came out of that one slope condition:
+
+| | $\beta_0$ | $y_{n+1}$ | $y_n$ | $y_{n-1}$ | $y_{n-2}$ | $y_{n-3}$ | $y_{n-4}$ | $y_{n-5}$ |
+|---|---|---|---|---|---|---|---|---|
+| BDF1 | $1$ | 1 | $-1$ | | | | | |
+| BDF2 | $2/3$ | 1 | $-4/3$ | $1/3$ | | | | |
+| BDF3 | $6/11$ | 1 | $-18/11$ | $9/11$ | $-2/11$ | | | |
+| BDF4 | $12/25$ | 1 | $-48/25$ | $36/25$ | $-16/25$ | $3/25$ | | |
+| BDF5 | $60/137$ | 1 | $-300/137$ | $300/137$ | $-200/137$ | $75/137$ | $-12/137$ | |
+| BDF6 | $60/147$ | 1 | $-360/147$ | $450/147$ | $-400/147$ | $225/147$ | $-72/147$ | $10/147$ |
+
+BDF1 is exactly implicit Euler &mdash; a polynomial of degree one through two points is a straight line, and demanding its slope match $f$ at the right end is precisely the backward Euler step. Everything in Part 1 was BDF1 all along.
+
+Notice what you get for free. BDF-$k$ is order $k$, and it costs **one** $f$ evaluation and **one** nonlinear solve per step, regardless of $k$. A fourth-order Runge&ndash;Kutta method costs four stages; a fourth-order implicit Runge&ndash;Kutta costs four coupled stages, which for an $n$-dimensional system means solving a $4n \times 4n$ system. BDF4 costs exactly what BDF1 costs. **That is why stiff solvers are built on BDF**: high order at the price of low order, because the extra accuracy comes from memory rather than from work.
+
+The catch is that memory has to be built up &mdash; a BDF5 step needs five previous points, and at $t = 0$ you have one. Every BDF code therefore starts at order one with a tiny step and climbs. And if anything discontinuous happens mid-run, the history is poisoned and the code must drop back to order one and climb again. If you have ever watched a chemistry integrator crawl right after an ignition event, that is what you were seeing.
+
+## Where BDF stops: the stability wedge
+
+Everything in Part 1 said implicit methods are unconditionally stable. That was true for implicit Euler. It is not true for BDF in general, and this is the single most practically important fact in the whole family.
+
+For a multistep method, stability is not one amplification factor any more &mdash; the step mixes several past values, so applying it to $\dot y = \lambda y$ gives a *recurrence*, and you need every root of its characteristic polynomial to sit inside the unit circle. Writing $z = \lambda \Delta t$, the condition for BDF-$k$ is that every root $\zeta$ of
+
+<div class="mathd">
+\[ \sum_{j=1}^{k} \frac{1}{j}\,\zeta^{\,k-j}(\zeta - 1)^{j} \;-\; z\,\zeta^{k} \;=\; 0 \]
+</div>
+
+satisfies $|\zeta| \le 1$. The boundary of the stable set is traced by walking $\zeta$ around the unit circle, which gives a clean parametric curve. Here is what that produces:
+
+<div class="viz"><div class="viz-title">Interactive 8 &mdash; BDF stability regions, order 1 to 6</div><div class="viz-seg" id="w8zoom"><button data-z="full" class="on">Full view</button><button data-z="near">Near the origin</button></div><canvas id="w8c" width="680" height="464" role="img" aria-label="Stability region of the selected BDF order in the complex plane, with the A-alpha wedge drawn."></canvas><div class="viz-ctrl"><label for="w8k">order k</label><input type="range" id="w8k" min="1" max="6" step="1" value="2"><span class="viz-val" id="w8kv">BDF2</span></div><div class="viz-stats"><div class="viz-stat"><div class="viz-stat-l">Order of accuracy</div><div class="viz-stat-v" id="w8ord">2</div></div><div class="viz-stat"><div class="viz-stat-l">Wedge half-angle &alpha;</div><div class="viz-stat-v" id="w8a">90&deg;</div></div><div class="viz-stat"><div class="viz-stat-l">A-stable?</div><div class="viz-stat-v" id="w8as" style="font-size:.8rem;color:#82c9a0">yes</div></div><div class="viz-stat"><div class="viz-stat-l">Error constant</div><div class="viz-stat-v" id="w8ec" style="font-size:.9rem">&minus;0.083</div></div></div><div class="viz-note">Shaded is stable. BDF1 and BDF2 cover the whole left half plane &mdash; A-stable, exactly like implicit Euler. From BDF3 on, two notches appear on the far left and bite inwards, and the shaded wedge around the negative real axis narrows: 86&deg;, then 73&deg;, then 52&deg;, then 17.8&deg;. By BDF6 almost the entire left half plane is unstable except a thin sliver hugging the real axis. Use &quot;near the origin&quot; to see how quietly this happens close to zero, which is why it bites people by surprise.</div></div>
+
+<script>
+(function(){
+var cv=document.getElementById('w8c'), ctx=cv.getContext('2d'), zoom='full', k=2;
+var W=680, H=464, DPR=Math.min(2,window.devicePixelRatio||1);
+cv.width=W*DPR; cv.height=H*DPR; cv.style.width='100%';
+var ALPHA={1:90,2:90,3:86.03,4:73.35,5:51.84,6:17.84};
+var EC={1:'-0.500',2:'-0.083',3:'-0.042',4:'-0.025',5:'-0.017',6:'-0.012'};
+var COL={1:'196,149,106',2:'130,201,160',3:'176,159,214',4:'127,179,211',5:'201,168,76',6:'212,112,95'};
+function ranges(){ return zoom==='full'?{r0:-10,r1:34,i1:15}:{r0:-4,r1:7,i1:3.75}; }
+function locus(n){
+  var pts=[];
+  for(var s=0;s<=n;s++){
+    var th=2*Math.PI*s/n;
+    var wr=1-Math.cos(-th), wi=-Math.sin(-th);
+    var pr=1, pi=0, zr=0, zi=0;
+    for(var j=1;j<=k;j++){
+      var nr=pr*wr-pi*wi, ni=pr*wi+pi*wr; pr=nr; pi=ni;
+      zr+=pr/j; zi+=pi/j;
+    }
+    pts.push([zr,zi]);
+  }
+  return pts;
+}
+function render(){
+  var R=ranges(), sx=W/(R.r1-R.r0), sy=H/(2*R.i1);
+  function px(re){ return (re-R.r0)*sx; }
+  function py(im){ return H/2 - im*sy; }
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='rgba('+COL[k]+',0.16)';
+  ctx.fillRect(0,0,W,H);
+  var pts=locus(1400), path=new Path2D();
+  path.moveTo(px(pts[0][0]),py(pts[0][1]));
+  for(var i=1;i<pts.length;i++) path.lineTo(px(pts[i][0]),py(pts[i][1]));
+  path.closePath();
+  ctx.save();
+  ctx.globalCompositeOperation='destination-out';
+  ctx.fillStyle='rgba(0,0,0,1)';
+  ctx.fill(path,'evenodd');
+  ctx.restore();
+  ctx.strokeStyle='rgba('+COL[k]+',0.95)'; ctx.lineWidth=1.6; ctx.stroke(path);
+  // wedge
+  var a=ALPHA[k]*Math.PI/180, len=400;
+  ctx.strokeStyle='rgba(201,168,76,0.55)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+  [1,-1].forEach(function(sgn){
+    ctx.beginPath(); ctx.moveTo(px(0),py(0));
+    ctx.lineTo(px(-len*Math.cos(a)), py(sgn*len*Math.sin(a)));
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  // axes
+  ctx.strokeStyle='rgba(232,228,220,0.28)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,py(0)); ctx.lineTo(W,py(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px(0),0); ctx.lineTo(px(0),H); ctx.stroke();
+  ctx.fillStyle='rgba(232,228,220,0.45)'; ctx.font='10px ui-monospace,monospace';
+  var tickStep=zoom==='full'?10:2;
+  for(var t=Math.ceil(R.r0/tickStep)*tickStep;t<=R.r1;t+=tickStep){ if(t!==0) ctx.fillText(String(t),px(t)+3,py(0)+14); }
+  for(var u=-Math.floor(R.i1/tickStep)*tickStep;u<=R.i1;u+=tickStep){ if(u!==0) ctx.fillText(String(u)+'i',px(0)+5,py(u)-4); }
+  ctx.fillText('Re(z)', W-50, py(0)-8);
+  document.getElementById('w8kv').textContent='BDF'+k;
+  document.getElementById('w8ord').textContent=String(k);
+  document.getElementById('w8a').textContent=(ALPHA[k]===90?'90':ALPHA[k].toFixed(2))+'°';
+  var as=document.getElementById('w8as');
+  as.textContent=k<=2?'yes — A-stable':'no — A(α)-stable only';
+  as.style.color=k<=2?'#82c9a0':'#c9a84c';
+  document.getElementById('w8ec').textContent=EC[k];
+}
+document.getElementById('w8k').addEventListener('input',function(){ k=+this.value; render(); });
+document.getElementById('w8zoom').addEventListener('click',function(e){
+  if(e.target.tagName!=='BUTTON')return;
+  [].forEach.call(this.children,function(b){b.classList.remove('on');}); e.target.classList.add('on');
+  zoom=e.target.getAttribute('data-z'); render(); });
+render();
+})();
+</script>
+
+This is not a defect in BDF; it is a law. **Dahlquist's second barrier** says that no A-stable linear multistep method can have order greater than two, full stop. You cannot design your way around it. If you want unconditional stability from a multistep method you are capped at second order, and the trapezoidal rule is the best you can do there.
+
+So BDF-$k$ for $k \ge 3$ gives up A-stability and settles for **A($\alpha$)-stability**: stable inside a wedge of half-angle $\alpha$ around the negative real axis. For a great many real problems this is fine, because stiff eigenvalues mostly sit on or near the negative real axis &mdash; chemical kinetics is strongly damped, and damped means real. But the moment your system has stiff *oscillatory* modes, with eigenvalues far from the real axis, BDF5 and BDF6 will refuse to behave, and a well-written code will notice and drop its order rather than fight.
+
+And at $k = 7$ it all ends. The method stops being zero-stable &mdash; it is unstable even in the limit $\Delta t \to 0$, on any problem at all &mdash; so BDF7 does not exist as a usable method. This is why every BDF code you will ever meet caps out at order five or six. CVODE goes to five by default; `ode15s` goes to five; LSODE allows six.
+
+## How a real solver actually runs
+
+Put the pieces together and you have the control loop inside every production stiff integrator:
+
+1. **Predict.** Extrapolate the history polynomial forward to $t_{n+1}$ to get a cheap initial guess for the Newton solve &mdash; it costs nothing because the polynomial is already there.
+2. **Correct.** Solve the BDF equation with Newton, starting from the prediction. The linear system is $(I - \Delta t\,\beta_0\, J)\,\delta = -G$, and the matrix is the one from Part 1.
+3. **Estimate the error.** The difference between the prediction and the correction is, to leading order, proportional to the local truncation error. Free error estimate, same idea as the extrapolation tableau.
+4. **Accept or reject.** If the estimate is within tolerance, keep the step. If not, throw it away, shrink, retry.
+5. **Choose the next order and step.** Compute what the error would have been at order $k-1$, $k$ and $k+1$, pick whichever lets you take the biggest next step, and move on.
+
+Step 5 is why these codes feel alive when you watch their logs: the order breathes up and down as the solution gets smoother or rougher. Step 2 is where all the time goes, and it is where Part 3 lives.
+
+Because look at that linear system once more. For a 50-species mechanism $J$ is 50&times;50 and you refactor it constantly. For a 500-species mechanism it is 500&times;500, dense factorisation is $O(n^3)$, and you are now spending 99% of your runtime inside one line of linear algebra.
+
+### What Part 3 covers
+
+How to make that line fast: forming $J$ analytically instead of by finite differences, exploiting the fact that it is mostly zeros, colouring the sparsity graph so you can build it in a handful of function evaluations, replacing dense LU with sparse direct factorisation, replacing direct factorisation entirely with Krylov iteration and matrix-free Jacobian-vector products, preconditioning that so it converges, and the single cheapest trick in the book &mdash; not recomputing $J$ at all, most of the time.

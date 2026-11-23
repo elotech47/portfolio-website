@@ -235,6 +235,39 @@ const SITE_CONFIG = {
   //  featured: true → shown on homepage blog section; all published posts appear on /blog/.
   blog: [
     {
+      slug:      "stiff-odes-1-explicit-implicit",
+      published: true,
+      featured:  false,
+      category:  "research",
+      date:      "November 2026",
+      title:     "Why Your ODE Solver Blows Up",
+      excerpt:   "Part 1 of 3. Explicit and implicit integration built from scratch, with interactive stability regions, a Newton solve you can step through, and a two-timescale system that destroys forward Euler. No numerical analysis background assumed.",
+      readTime:  "24 min",
+      tags:      ["Numerical Methods", "Stiff ODEs", "Stability", "Interactive"]
+    },
+    {
+      slug:      "stiff-odes-2-extrapolation-bdf",
+      published: true,
+      featured:  false,
+      category:  "research",
+      date:      "November 2026",
+      title:     "How Real Solvers Take Big Steps",
+      excerpt:   "Part 2 of 3. What order of accuracy actually buys you, Richardson extrapolation and the tableau that turns a bad method into a good one, and BDF derived from scratch — with interactive stability regions for orders one through six.",
+      readTime:  "26 min",
+      tags:      ["Numerical Methods", "BDF", "Extrapolation", "Interactive"]
+    },
+    {
+      slug:      "stiff-odes-3-fast-bdf",
+      published: true,
+      featured:  false,
+      category:  "research",
+      date:      "November 2026",
+      title:     "Making BDF Fast",
+      excerpt:   "Part 3 of 3. Inside the one line where stiff solvers spend all their time. Analytic versus finite-difference Jacobians, sparsity and graph colouring, matrix-free Krylov methods, preconditioning, and the cheapest trick of all.",
+      readTime:  "25 min",
+      tags:      ["Numerical Methods", "Sparse Linear Algebra", "Krylov", "Interactive"]
+    },
+    {
       slug:      "rl-solver-selection",
       published: true,
       featured:  true,
